@@ -11,10 +11,20 @@ namespace Masar.Application.Services;
 public class ReportService : IReportService
 {
     private readonly IProjectRepository _projects;
+    private readonly ICollegeRepository _colleges;
+    private readonly IDepartmentRepository _departments;
+    private readonly IDoctorRepository _doctors;
 
-    public ReportService(IProjectRepository projects)
+    public ReportService(
+        IProjectRepository projects,
+        ICollegeRepository colleges,
+        IDepartmentRepository departments,
+        IDoctorRepository doctors)
     {
         _projects = projects;
+        _colleges = colleges;
+        _departments = departments;
+        _doctors = doctors;
     }
 
     public async Task<ReportResultDto> BuildProjectReportAsync(ReportFilterDto filter, CancellationToken cancellationToken = default)
@@ -55,28 +65,30 @@ public class ReportService : IReportService
         var projects = query.Select(p => p.ToDto()).ToList();
         return new ReportResultDto
         {
-            Title = BuildTitle(filter),
+            Title = await BuildTitleAsync(filter, cancellationToken),
             Projects = projects
         };
     }
 
-    private static string BuildTitle(ReportFilterDto filter)
+    private async Task<string> BuildTitleAsync(ReportFilterDto filter, CancellationToken cancellationToken)
     {
-        var parts = new List<string> { "Projects Report" };
+        var parts = new List<string> { "تقرير المشاريع" };
 
         if (filter.CollegeId.HasValue)
         {
-            parts.Add($"College #{filter.CollegeId.Value}");
+            var college = await _colleges.GetByIdAsync(filter.CollegeId.Value, cancellationToken);
+            parts.Add(college != null ? college.NameAr : $"كلية #{filter.CollegeId.Value}");
         }
 
         if (filter.DepartmentId.HasValue)
         {
-            parts.Add($"Department #{filter.DepartmentId.Value}");
+            var dept = await _departments.GetByIdAsync(filter.DepartmentId.Value, cancellationToken);
+            parts.Add(dept != null ? dept.NameAr : $"قسم #{filter.DepartmentId.Value}");
         }
 
         if (filter.Year.HasValue)
         {
-            parts.Add($"Year {filter.Year.Value}");
+            parts.Add($"سنة {filter.Year.Value}");
         }
 
         if (filter.Status.HasValue)
@@ -86,14 +98,16 @@ public class ReportService : IReportService
 
         if (filter.SupervisorId.HasValue)
         {
-            parts.Add($"Supervisor #{filter.SupervisorId.Value}");
+            var doctor = await _doctors.GetByIdAsync(filter.SupervisorId.Value, cancellationToken);
+            parts.Add(doctor != null ? $"المشرف: {doctor.FullName}" : $"المشرف #{filter.SupervisorId.Value}");
         }
 
         if (!string.IsNullOrWhiteSpace(filter.ProjectName))
         {
-            parts.Add($"Project: {filter.ProjectName}");
+            parts.Add($"مشروع: {filter.ProjectName}");
         }
 
         return string.Join(" - ", parts);
     }
 }
+

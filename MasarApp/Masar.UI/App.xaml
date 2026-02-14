@@ -47,9 +47,6 @@
             <DataTemplate DataType="{x:Type vm:DiscussionsViewModel}">
                 <views:DiscussionsView />
             </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:EvaluationsViewModel}">
-                <views:EvaluationsView />
-            </DataTemplate>
             <DataTemplate DataType="{x:Type vm:ReportsViewModel}">
                 <views:ReportsView />
             </DataTemplate>

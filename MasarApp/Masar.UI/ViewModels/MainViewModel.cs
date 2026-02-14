@@ -23,7 +23,6 @@ public class MainViewModel : ViewModelBase
     private readonly TeamsViewModel _teamsViewModel;
     private readonly CommitteesViewModel _committeesViewModel;
     private readonly DiscussionsViewModel _discussionsViewModel;
-    private readonly EvaluationsViewModel _evaluationsViewModel;
     private readonly ReportsViewModel _reportsViewModel;
     private readonly UsersViewModel _usersViewModel;
     private readonly AcademicTermsViewModel _academicTermsViewModel;
@@ -56,7 +55,6 @@ public class MainViewModel : ViewModelBase
         else if (viewModel is CollegesViewModel colvm) await colvm.LoadAsync();
         else if (viewModel is CommitteesViewModel comvm) await comvm.LoadAsync();
         else if (viewModel is DiscussionsViewModel disvm) await disvm.LoadAsync();
-        else if (viewModel is EvaluationsViewModel evm) await evm.LoadAsync();
         else if (viewModel is ReportsViewModel rvm) await rvm.LoadAsync();
         else if (viewModel is UsersViewModel uvm) await uvm.LoadAsync();
         else if (viewModel is AcademicTermsViewModel atvm) await atvm.LoadAsync();
@@ -103,7 +101,6 @@ public class MainViewModel : ViewModelBase
         TeamsViewModel teamsViewModel,
         CommitteesViewModel committeesViewModel,
         DiscussionsViewModel discussionsViewModel,
-        EvaluationsViewModel evaluationsViewModel,
         ReportsViewModel reportsViewModel,
         UsersViewModel usersViewModel,
         AcademicTermsViewModel academicTermsViewModel,
@@ -121,7 +118,6 @@ public class MainViewModel : ViewModelBase
         _teamsViewModel = teamsViewModel;
         _committeesViewModel = committeesViewModel;
         _discussionsViewModel = discussionsViewModel;
-        _evaluationsViewModel = evaluationsViewModel;
         _reportsViewModel = reportsViewModel;
         _usersViewModel = usersViewModel;
         _academicTermsViewModel = academicTermsViewModel;
@@ -157,7 +153,6 @@ public class MainViewModel : ViewModelBase
         AddItem(_localizationService.GetString("Nav.Teams"), "\uE902", _teamsViewModel, role is UserRole.Admin or UserRole.HeadOfDepartment or UserRole.Supervisor);
         AddItem(_localizationService.GetString("Nav.Committees"), "\uEAFD", _committeesViewModel, role is UserRole.Admin or UserRole.HeadOfDepartment);
         AddItem(_localizationService.GetString("Nav.Discussions"), "\uE70B", _discussionsViewModel, role != UserRole.Student);
-        AddItem(_localizationService.GetString("Nav.Evaluations"), "\uE8D7", _evaluationsViewModel, role is UserRole.Admin or UserRole.Supervisor or UserRole.HeadOfDepartment);
         AddItem(_localizationService.GetString("Nav.Reports"), "\uE9D2", _reportsViewModel, role != UserRole.Student);
         AddItem(_localizationService.GetString("Nav.Users"), "\uE8FA", _usersViewModel, role == UserRole.Admin);
         AddItem(_localizationService.GetString("Nav.AcademicTerms"), "\uE7BE", _academicTermsViewModel, role == UserRole.Admin);

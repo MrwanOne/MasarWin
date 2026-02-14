@@ -16,27 +16,33 @@ public class StudentEvaluationService : IStudentEvaluationService
     private readonly IStudentEvaluationRepository _evaluations;
     private readonly IEvaluationCriteriaRepository _criteria;
     private readonly ICurrentUserService _currentUser;
+    private readonly IUserRepository _users;
 
     public StudentEvaluationService(
         IStudentEvaluationRepository evaluations,
         IEvaluationCriteriaRepository criteria,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        IUserRepository users)
     {
         _evaluations = evaluations;
         _criteria = criteria;
         _currentUser = currentUser;
+        _users = users;
     }
 
     public async Task<List<StudentEvaluationDto>> GetByDiscussionAsync(int discussionId, CancellationToken cancellationToken = default)
     {
         var evaluations = await _evaluations.GetByDiscussionAsync(discussionId, cancellationToken);
-        return evaluations.Select(ToDto).ToList();
+        var results = new List<StudentEvaluationDto>();
+        foreach (var e in evaluations)
+            results.Add(await ToDtoAsync(e, cancellationToken));
+        return results;
     }
 
     public async Task<StudentEvaluationDto?> GetByIdAsync(int evaluationId, CancellationToken cancellationToken = default)
     {
         var evaluation = await _evaluations.GetWithScoresAsync(evaluationId, cancellationToken);
-        return evaluation == null ? null : ToDto(evaluation);
+        return evaluation == null ? null : await ToDtoAsync(evaluation, cancellationToken);
     }
 
     public async Task<Result<StudentEvaluationDto>> AddAsync(StudentEvaluationDto dto, CancellationToken cancellationToken = default)
@@ -71,7 +77,7 @@ public class StudentEvaluationService : IStudentEvaluationService
 
         await _evaluations.AddAsync(entity, cancellationToken);
         var created = await _evaluations.GetWithScoresAsync(entity.EvaluationId, cancellationToken);
-        return Result<StudentEvaluationDto>.Success(ToDto(created ?? entity));
+        return Result<StudentEvaluationDto>.Success(await ToDtoAsync(created ?? entity, cancellationToken));
     }
 
     public async Task<Result<StudentEvaluationDto>> UpdateAsync(StudentEvaluationDto dto, CancellationToken cancellationToken = default)
@@ -104,7 +110,7 @@ public class StudentEvaluationService : IStudentEvaluationService
 
         await _evaluations.UpdateAsync(entity, cancellationToken);
         var updated = await _evaluations.GetWithScoresAsync(entity.EvaluationId, cancellationToken);
-        return Result<StudentEvaluationDto>.Success(ToDto(updated ?? entity));
+        return Result<StudentEvaluationDto>.Success(await ToDtoAsync(updated ?? entity, cancellationToken));
     }
 
     public async Task<Result> DeleteAsync(int evaluationId, CancellationToken cancellationToken = default)
@@ -138,31 +144,41 @@ public class StudentEvaluationService : IStudentEvaluationService
         }).ToList();
     }
 
-    private static StudentEvaluationDto ToDto(StudentEvaluation entity) => new()
+    private async Task<StudentEvaluationDto> ToDtoAsync(StudentEvaluation entity, CancellationToken cancellationToken = default)
     {
-        EvaluationId = entity.EvaluationId,
-        DiscussionId = entity.DiscussionId,
-        StudentId = entity.StudentId,
-        StudentName = entity.Student?.FullName ?? string.Empty,
-        StudentNumber = entity.Student?.StudentNumber ?? string.Empty,
-        TotalScore = entity.TotalScore,
-        ContributionPercentage = entity.ContributionPercentage,
-        GeneralFeedback = entity.GeneralFeedback,
-        StrengthPoints = entity.StrengthPoints,
-        ImprovementAreas = entity.ImprovementAreas,
-        EvaluatedAt = entity.CreatedAt,
-        EvaluatedByUserId = entity.CreatedByUserId,
-        EvaluatedByName = string.Empty, // Navigation not available in BaseEntity
-        CriteriaScores = entity.CriteriaScores.Select(cs => new CriteriaScoreDto
+        string evaluatedByName = string.Empty;
+        if (entity.CreatedByUserId.HasValue && entity.CreatedByUserId.Value > 0)
         {
-            ScoreId = cs.ScoreId,
-            EvaluationId = cs.EvaluationId,
-            CriteriaId = cs.CriteriaId,
-            CriteriaNameAr = cs.Criteria?.NameAr ?? string.Empty,
-            CriteriaNameEn = cs.Criteria?.NameEn ?? string.Empty,
-            MaxScore = cs.Criteria?.MaxScore ?? 0,
-            Score = cs.Score,
-            Comments = cs.Comments
-        }).ToList()
-    };
+            var user = await _users.GetByIdAsync(entity.CreatedByUserId.Value, cancellationToken);
+            evaluatedByName = user?.FullName ?? string.Empty;
+        }
+
+        return new StudentEvaluationDto
+        {
+            EvaluationId = entity.EvaluationId,
+            DiscussionId = entity.DiscussionId,
+            StudentId = entity.StudentId,
+            StudentName = entity.Student?.FullName ?? string.Empty,
+            StudentNumber = entity.Student?.StudentNumber ?? string.Empty,
+            TotalScore = entity.TotalScore,
+            ContributionPercentage = entity.ContributionPercentage,
+            GeneralFeedback = entity.GeneralFeedback,
+            StrengthPoints = entity.StrengthPoints,
+            ImprovementAreas = entity.ImprovementAreas,
+            EvaluatedAt = entity.CreatedAt,
+            EvaluatedByUserId = entity.CreatedByUserId,
+            EvaluatedByName = evaluatedByName,
+            CriteriaScores = entity.CriteriaScores.Select(cs => new CriteriaScoreDto
+            {
+                ScoreId = cs.ScoreId,
+                EvaluationId = cs.EvaluationId,
+                CriteriaId = cs.CriteriaId,
+                CriteriaNameAr = cs.Criteria?.NameAr ?? string.Empty,
+                CriteriaNameEn = cs.Criteria?.NameEn ?? string.Empty,
+                MaxScore = cs.Criteria?.MaxScore ?? 0,
+                Score = cs.Score,
+                Comments = cs.Comments
+            }).ToList()
+        };
+    }
 }

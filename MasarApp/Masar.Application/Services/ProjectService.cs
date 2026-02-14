@@ -341,11 +341,11 @@ public class ProjectService : IProjectService
         return Result.Success();
     }
 
-    private static int ClampCompletion(int value)
+    private static int ClampCompletion(decimal value)
     {
         if (value < 0) return 0;
         if (value > 100) return 100;
-        return value;
+        return (int)value;
     }
 
     private async Task<Result> EnsureSupervisionCapacity(int supervisorId, int? excludeProjectId, CancellationToken cancellationToken)

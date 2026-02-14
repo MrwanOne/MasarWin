@@ -72,7 +72,6 @@ public partial class App : System.Windows.Application
                     services.AddTransient<TeamsViewModel>();
                     services.AddTransient<CommitteesViewModel>();
                     services.AddTransient<DiscussionsViewModel>();
-                    services.AddTransient<EvaluationsViewModel>();
                     services.AddTransient<ReportsViewModel>();
                     services.AddTransient<UsersViewModel>();
                     services.AddTransient<AcademicTermsViewModel>();

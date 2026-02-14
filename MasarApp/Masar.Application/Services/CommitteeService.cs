@@ -16,17 +16,20 @@ public class CommitteeService : ICommitteeService
     private readonly ICommitteeRepository _committees;
     private readonly IDepartmentRepository _departments;
     private readonly IDoctorRepository _doctors;
+    private readonly ITeamRepository _teams;
     private readonly ICurrentUserService _currentUser;
 
     public CommitteeService(
         ICommitteeRepository committees,
         IDepartmentRepository departments,
         IDoctorRepository doctors,
+        ITeamRepository teams,
         ICurrentUserService currentUser)
     {
         _committees = committees;
         _departments = departments;
         _doctors = doctors;
+        _teams = teams;
         _currentUser = currentUser;
     }
 
@@ -120,6 +123,14 @@ public class CommitteeService : ICommitteeService
 
         var collegeCheck = await EnsureSameCollege(committee, doctor, cancellationToken);
         if (collegeCheck.IsFailure) return Result<CommitteeDto>.Failure(collegeCheck.Message);
+
+        // Conflict of interest: supervisor cannot be on a committee that evaluates their own team
+        var allTeams = await _teams.GetAllAsync(cancellationToken);
+        var supervisedTeams = allTeams.Where(t => t.SupervisorId == doctorId && t.CommitteeId == committeeId).ToList();
+        if (supervisedTeams.Any())
+        {
+            return Result<CommitteeDto>.Failure("لا يمكن إضافة المشرف كعضو في لجنة تقيّم فريقه (تعارض مصالح)");
+        }
 
         var hasCommitteeThisTerm = committee.TermId.HasValue && 
             await _committees.DoctorHasCommitteeInTermAsync(doctorId, committee.TermId.Value, committeeId, cancellationToken);
