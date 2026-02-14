@@ -14,11 +14,15 @@ namespace Masar.Application.Services;
 public class TeamService : ITeamService
 {
     private readonly ITeamRepository _teams;
+    private readonly IDoctorRepository _doctors;
+    private readonly IProjectRepository _projects;
     private readonly ICurrentUserService _currentUser;
 
-    public TeamService(ITeamRepository teams, ICurrentUserService currentUser)
+    public TeamService(ITeamRepository teams, IDoctorRepository doctors, IProjectRepository projects, ICurrentUserService currentUser)
     {
         _teams = teams;
+        _doctors = doctors;
+        _projects = projects;
         _currentUser = currentUser;
     }
 
@@ -44,6 +48,12 @@ public class TeamService : ITeamService
             return Result<TeamDto>.Failure("Team name is required.");
         }
 
+        if (dto.SupervisorId.HasValue && dto.SupervisorId.Value > 0)
+        {
+            var supCheck = await EnsureSupervisionCapacity(dto.SupervisorId.Value, cancellationToken);
+            if (supCheck.IsFailure) return Result<TeamDto>.Failure(supCheck.Message);
+        }
+
         var entity = new Team
         {
             Name = dto.Name.Trim(),
@@ -67,6 +77,12 @@ public class TeamService : ITeamService
         if (entity == null)
         {
             return Result<TeamDto>.Failure("Team not found.");
+        }
+
+        if (dto.SupervisorId.HasValue && dto.SupervisorId.Value > 0 && entity.SupervisorId != dto.SupervisorId)
+        {
+            var supCheck = await EnsureSupervisionCapacity(dto.SupervisorId.Value, cancellationToken);
+            if (supCheck.IsFailure) return Result<TeamDto>.Failure(supCheck.Message);
         }
 
         entity.Name = dto.Name.Trim();
@@ -102,6 +118,12 @@ public class TeamService : ITeamService
         var entity = await _teams.GetByIdAsync(teamId, cancellationToken);
         if (entity == null) return Result<TeamDto>.Failure("Team not found.");
 
+        if (supervisorId.HasValue && supervisorId.Value > 0)
+        {
+            var supCheck = await EnsureSupervisionCapacity(supervisorId.Value, cancellationToken);
+            if (supCheck.IsFailure) return Result<TeamDto>.Failure(supCheck.Message);
+        }
+
         entity.SupervisorId = supervisorId;
         await _teams.UpdateAsync(entity, cancellationToken);
         return Result<TeamDto>.Success(entity.ToDto());
@@ -127,6 +149,24 @@ public class TeamService : ITeamService
         {
             return Result.Failure("User is not authorized to perform this operation.");
         }
+        return Result.Success();
+    }
+
+    private async Task<Result> EnsureSupervisionCapacity(int supervisorId, CancellationToken cancellationToken)
+    {
+        var doctor = await _doctors.GetByIdAsync(supervisorId, cancellationToken);
+        if (doctor == null) return Result.Failure("Supervisor not found.");
+
+        if (doctor.MaxSupervisionCount <= 0) return Result.Success();
+
+        var allProjects = await _projects.GetWithDetailsAsync(cancellationToken);
+        var currentCount = allProjects.Count(p => p.SupervisorId == supervisorId);
+
+        if (currentCount >= doctor.MaxSupervisionCount)
+        {
+            return Result.Failure($"المشرف وصل للحد الأقصى للإشراف ({doctor.MaxSupervisionCount} مشاريع)");
+        }
+
         return Result.Success();
     }
 }

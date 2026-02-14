@@ -205,6 +205,30 @@ public class StudentEditViewModel : DialogViewModel
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(Student.FullName))
+            {
+                _dialogService.ShowError(
+                    _localizationService.IsArabic ? "يرجى إدخال اسم الطالب" : "Please enter student name",
+                    _localizationService.GetString("Title.Student"));
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(Student.StudentNumber))
+            {
+                _dialogService.ShowError(
+                    _localizationService.IsArabic ? "يرجى إدخال الرقم الجامعي" : "Please enter student number",
+                    _localizationService.GetString("Title.Student"));
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(Student.Email) && !Student.Email.Contains("@"))
+            {
+                _dialogService.ShowError(
+                    _localizationService.IsArabic ? "صيغة البريد الإلكتروني غير صحيحة" : "Invalid email format",
+                    _localizationService.GetString("Title.Student"));
+                return;
+            }
+
             if (SelectedCollegeId == 0)
             {
                 _dialogService.ShowError(Placeholder("Placeholder.SelectCollege"), _localizationService.GetString("Title.Student"));

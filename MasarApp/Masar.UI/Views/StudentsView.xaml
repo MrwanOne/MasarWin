@@ -18,7 +18,7 @@
                         <TextBlock Text="{DynamicResource Subtitle.Students}" Foreground="{StaticResource MutedTextBrush}" />
                     </StackPanel>
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="12,0,0,0">
-                        <ComboBox Width="180" ItemsSource="{Binding Departments}" DisplayMemberPath="NameAr" SelectedValuePath="DepartmentId" SelectedValue="{Binding SelectedDepartmentId}" Margin="0,0,8,0" />
+                        <ComboBox Width="180" ItemsSource="{Binding Departments}" DisplayMemberPath="NameEn" SelectedValuePath="DepartmentId" SelectedValue="{Binding SelectedDepartmentId}" Margin="0,0,8,0" />
                         <TextBox Width="220" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
                         <Button Content="{DynamicResource Button.Search}" Command="{Binding SearchCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
                         <Button Content="{DynamicResource Button.Refresh}" Command="{Binding RefreshCommand}" Style="{StaticResource GhostButtonStyle}" />

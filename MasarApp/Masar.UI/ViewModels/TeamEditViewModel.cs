@@ -274,6 +274,14 @@ public class TeamEditViewModel : DialogViewModel
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(Team.Name))
+            {
+                _dialogService.ShowError(
+                    _localizationService.IsArabic ? "يرجى إدخال اسم الفريق" : "Please enter team name",
+                    _localizationService.GetString("Title.Team"));
+                return;
+            }
+
             if (Team.DepartmentId == 0)
             {
                 _dialogService.ShowError(_localizationService.GetString("Placeholder.SelectDepartment"), _localizationService.GetString("Title.Team"));

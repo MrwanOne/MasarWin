@@ -26,12 +26,12 @@
                     </StackPanel>
                 </DockPanel>
                 <WrapPanel Margin="0,12,0,0" HorizontalAlignment="Left">
-                    <Button Content="{DynamicResource Button.Add}" Command="{Binding AddCommand}" Margin="0,0,8,0" />
-                    <Button Content="{DynamicResource Button.Edit}" Command="{Binding EditCommand}" Margin="0,0,8,0" />
-                    <Button Content="{DynamicResource Button.Delete}" Command="{Binding DeleteCommand}" Margin="0,0,8,0" />
-                    <Button Content="{DynamicResource Button.Accept}" Command="{Binding AcceptCommand}" Margin="0,0,8,0" Style="{StaticResource SecondaryButtonStyle}" />
-                    <Button Content="{DynamicResource Button.Reject}" Command="{Binding RejectCommand}" Margin="0,0,8,0" Style="{StaticResource GhostButtonStyle}" />
-                    <Button Content="{DynamicResource Button.AssignSupervisor}" Command="{Binding AssignSupervisorCommand}" Margin="0,0,8,0" />
+                    <Button Content="{DynamicResource Button.Add}" Command="{Binding AddCommand}" Margin="0,0,8,0" Visibility="{Binding CanManage, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <Button Content="{DynamicResource Button.Edit}" Command="{Binding EditCommand}" Margin="0,0,8,0" Visibility="{Binding CanManage, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <Button Content="{DynamicResource Button.Delete}" Command="{Binding DeleteCommand}" Margin="0,0,8,0" Visibility="{Binding CanManage, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <Button Content="{DynamicResource Button.Accept}" Command="{Binding AcceptCommand}" Margin="0,0,8,0" Style="{StaticResource SecondaryButtonStyle}" Visibility="{Binding CanManage, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <Button Content="{DynamicResource Button.Reject}" Command="{Binding RejectCommand}" Margin="0,0,8,0" Style="{StaticResource GhostButtonStyle}" Visibility="{Binding CanManage, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <Button Content="{DynamicResource Button.AssignSupervisor}" Command="{Binding AssignSupervisorCommand}" Margin="0,0,8,0" Visibility="{Binding CanManage, Converter={StaticResource BoolToVisibilityConverter}}" />
                     <Button Content="📜 سجل التغييرات" Command="{Binding ViewHistoryCommand}" Margin="0,0,8,0" Style="{StaticResource GhostButtonStyle}" />
                     <Button Content="{DynamicResource Button.UploadDoc}" Command="{Binding OpenDocumentsCommand}" Margin="0,0,8,0" Style="{StaticResource GhostButtonStyle}" />
                 </WrapPanel>

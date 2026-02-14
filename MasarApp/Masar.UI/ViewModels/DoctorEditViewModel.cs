@@ -244,6 +244,22 @@ public class DoctorEditViewModel : DialogViewModel
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(Doctor.FullName))
+            {
+                _dialogService.ShowError(
+                    _localizationService.IsArabic ? "يرجى إدخال اسم الدكتور" : "Please enter doctor name",
+                    _localizationService.GetString("Title.Doctors"));
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(Doctor.Email) && !Doctor.Email.Contains("@"))
+            {
+                _dialogService.ShowError(
+                    _localizationService.IsArabic ? "صيغة البريد الإلكتروني غير صحيحة" : "Invalid email format",
+                    _localizationService.GetString("Title.Doctors"));
+                return;
+            }
+
             if (SelectedCollegeId == 0)
             {
                 _dialogService.ShowError(_localizationService.GetString("Placeholder.SelectCollege"), _localizationService.GetString("Title.Doctors"));

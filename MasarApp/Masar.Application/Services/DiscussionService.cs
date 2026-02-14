@@ -113,6 +113,11 @@ public class DiscussionService : IDiscussionService
         var authCheck = EnsureAuthorized(UserRole.Admin, UserRole.HeadOfDepartment, UserRole.Supervisor);
         if (authCheck.IsFailure) return Result<DiscussionDto>.Failure(authCheck.Message);
 
+        if (supervisorScore < 0 || supervisorScore > 100)
+            return Result<DiscussionDto>.Failure("درجة المشرف يجب أن تكون بين 0 و 100");
+        if (committeeScore < 0 || committeeScore > 100)
+            return Result<DiscussionDto>.Failure("درجة اللجنة يجب أن تكون بين 0 و 100");
+
         var entity = await _discussions.GetByIdAsync(discussionId, cancellationToken);
         if (entity == null) return Result<DiscussionDto>.Failure("Discussion not found.");
 

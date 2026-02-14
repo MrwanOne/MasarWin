@@ -78,6 +78,12 @@ public class ProjectService : IProjectService
             SupervisorId = dto.SupervisorId
         };
 
+        if (entity.SupervisorId.HasValue && entity.SupervisorId.Value > 0)
+        {
+            var supCheck = await EnsureSupervisionCapacity(entity.SupervisorId.Value, null, cancellationToken);
+            if (supCheck.IsFailure) return Result<ProjectDto>.Failure(supCheck.Message);
+        }
+
         await _projects.AddAsync(entity, cancellationToken);
         var created = await GetByIdAsync(entity.ProjectId, cancellationToken);
         return Result<ProjectDto>.Success(created ?? entity.ToDto());
@@ -232,6 +238,9 @@ public class ProjectService : IProjectService
         var supCheck = await EnsureSupervisorMatchesDepartment(supervisorId, entity.DepartmentId, cancellationToken);
         if (supCheck.IsFailure) return Result<ProjectDto>.Failure(supCheck.Message);
 
+        var capacityCheck = await EnsureSupervisionCapacity(supervisorId, entity.ProjectId, cancellationToken);
+        if (capacityCheck.IsFailure) return Result<ProjectDto>.Failure(capacityCheck.Message);
+
         entity.SupervisorId = supervisorId;
         await _projects.UpdateAsync(entity, cancellationToken);
         return Result<ProjectDto>.Success(entity.ToDto());
@@ -332,10 +341,28 @@ public class ProjectService : IProjectService
         return Result.Success();
     }
 
-    private static decimal ClampCompletion(decimal value)
+    private static int ClampCompletion(int value)
     {
         if (value < 0) return 0;
         if (value > 100) return 100;
         return value;
+    }
+
+    private async Task<Result> EnsureSupervisionCapacity(int supervisorId, int? excludeProjectId, CancellationToken cancellationToken)
+    {
+        var doctor = await _doctors.GetByIdAsync(supervisorId, cancellationToken);
+        if (doctor == null) return Result.Failure("Supervisor not found.");
+
+        if (doctor.MaxSupervisionCount <= 0) return Result.Success();
+
+        var allProjects = await _projects.GetWithDetailsAsync(cancellationToken);
+        var currentCount = allProjects.Count(p => p.SupervisorId == supervisorId && p.ProjectId != (excludeProjectId ?? -1));
+
+        if (currentCount >= doctor.MaxSupervisionCount)
+        {
+            return Result.Failure($"المشرف وصل للحد الأقصى للإشراف ({doctor.MaxSupervisionCount} مشاريع)");
+        }
+
+        return Result.Success();
     }
 }

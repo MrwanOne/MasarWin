@@ -19,18 +19,18 @@
                     </StackPanel>
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="12,0,0,0">
                         <TextBlock Text="{DynamicResource Label.College}" VerticalAlignment="Center" Margin="0,0,4,0" />
-                        <ComboBox ItemsSource="{Binding Colleges}" DisplayMemberPath="NameAr" SelectedValuePath="CollegeId" SelectedValue="{Binding SelectedCollegeId}" Width="140" Margin="0,0,12,0" />
+                        <ComboBox ItemsSource="{Binding Colleges}" DisplayMemberPath="NameEn" SelectedValuePath="CollegeId" SelectedValue="{Binding SelectedCollegeId}" Width="140" Margin="0,0,12,0" />
                         <TextBlock Text="{DynamicResource Label.Department}" VerticalAlignment="Center" Margin="0,0,4,0" />
-                        <ComboBox ItemsSource="{Binding Departments}" DisplayMemberPath="NameAr" SelectedValuePath="DepartmentId" SelectedValue="{Binding SelectedDepartmentId}" Width="140" Margin="0,0,12,0" />
+                        <ComboBox ItemsSource="{Binding Departments}" DisplayMemberPath="NameEn" SelectedValuePath="DepartmentId" SelectedValue="{Binding SelectedDepartmentId}" Width="140" Margin="0,0,12,0" />
                         <TextBox Width="150" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
                         <Button Content="{DynamicResource Button.Refresh}" Command="{Binding RefreshCommand}" Style="{StaticResource GhostButtonStyle}" />
                     </StackPanel>
                 </DockPanel>
                 <WrapPanel Margin="0,12,0,0">
-                    <Button Content="{DynamicResource Button.Add}" Command="{Binding AddCommand}" Margin="0,0,8,0" />
-                    <Button Content="{DynamicResource Button.Edit}" Command="{Binding EditCommand}" Margin="0,0,8,0" />
-                    <Button Content="{DynamicResource Button.Delete}" Command="{Binding DeleteCommand}" Margin="0,0,8,0" />
-                    <Button Content="تعيين كرئيس قسم / Set as HOD" Command="{Binding SetAsHODCommand}" Margin="0,0,8,0" />
+                    <Button Content="{DynamicResource Button.Add}" Command="{Binding AddCommand}" Margin="0,0,8,0" Visibility="{Binding CanManage, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <Button Content="{DynamicResource Button.Edit}" Command="{Binding EditCommand}" Margin="0,0,8,0" Visibility="{Binding CanManage, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <Button Content="{DynamicResource Button.Delete}" Command="{Binding DeleteCommand}" Margin="0,0,8,0" Visibility="{Binding CanManage, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <Button Content="تعيين كرئيس قسم / Set as HOD" Command="{Binding SetAsHODCommand}" Margin="0,0,8,0" Visibility="{Binding CanManage, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </WrapPanel>
             </StackPanel>
         </Border>

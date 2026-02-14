@@ -19,16 +19,16 @@
                     </StackPanel>
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="12,0,0,0">
                         <TextBlock Text="{DynamicResource Label.College}" VerticalAlignment="Center" Margin="0,0,8,0" />
-                        <ComboBox ItemsSource="{Binding Colleges}" DisplayMemberPath="NameAr" SelectedValuePath="CollegeId" SelectedValue="{Binding SelectedCollegeId}" Width="200" Margin="0,0,16,0" />
+                        <ComboBox ItemsSource="{Binding Colleges}" DisplayMemberPath="NameEn" SelectedValuePath="CollegeId" SelectedValue="{Binding SelectedCollegeId}" Width="200" Margin="0,0,16,0" />
                         <TextBox Width="180" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
                         <Button Content="{DynamicResource Button.Search}" Command="{Binding SearchCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
                         <Button Content="{DynamicResource Button.Refresh}" Command="{Binding RefreshCommand}" Style="{StaticResource GhostButtonStyle}" />
                     </StackPanel>
                 </DockPanel>
                 <WrapPanel Margin="0,12,0,0">
-                    <Button Content="{DynamicResource Button.Add}" Command="{Binding AddCommand}" Margin="0,0,8,0" />
-                    <Button Content="{DynamicResource Button.Edit}" Command="{Binding EditCommand}" Margin="0,0,8,0" />
-                    <Button Content="{DynamicResource Button.Delete}" Command="{Binding DeleteCommand}" Margin="0,0,8,0" />
+                    <Button Content="{DynamicResource Button.Add}" Command="{Binding AddCommand}" Margin="0,0,8,0" Visibility="{Binding CanManage, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <Button Content="{DynamicResource Button.Edit}" Command="{Binding EditCommand}" Margin="0,0,8,0" Visibility="{Binding CanManage, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <Button Content="{DynamicResource Button.Delete}" Command="{Binding DeleteCommand}" Margin="0,0,8,0" Visibility="{Binding CanManage, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </WrapPanel>
             </StackPanel>
         </Border>

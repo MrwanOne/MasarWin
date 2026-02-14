@@ -24,10 +24,10 @@
                     </StackPanel>
                 </DockPanel>
                 <WrapPanel Margin="0,12,0,0">
-                    <Button Content="{DynamicResource Button.Add}" Command="{Binding AddCommand}" Margin="0,0,8,0" />
-                    <Button Content="{DynamicResource Button.Edit}" Command="{Binding EditCommand}" Margin="0,0,8,0" />
-                    <Button Content="{DynamicResource Button.Delete}" Command="{Binding DeleteCommand}" Margin="0,0,8,0" />
-                    <Button Content="{DynamicResource Button.AddMember}" Command="{Binding AddMemberCommand}" Margin="0,0,8,0" Style="{StaticResource GhostButtonStyle}" />
+                    <Button Content="{DynamicResource Button.Add}" Command="{Binding AddCommand}" Margin="0,0,8,0" Visibility="{Binding CanManage, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <Button Content="{DynamicResource Button.Edit}" Command="{Binding EditCommand}" Margin="0,0,8,0" Visibility="{Binding CanManage, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <Button Content="{DynamicResource Button.Delete}" Command="{Binding DeleteCommand}" Margin="0,0,8,0" Visibility="{Binding CanManage, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <Button Content="{DynamicResource Button.AddMember}" Command="{Binding AddMemberCommand}" Margin="0,0,8,0" Style="{StaticResource GhostButtonStyle}" Visibility="{Binding CanManage, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </WrapPanel>
             </StackPanel>
         </Border>
