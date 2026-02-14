@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "jr0gzmFNlN0=",
+  "success": true,
+  "projectFilePath": "/home/marwan/Desktop/Masar1/MasarApp/Masar.Application/Masar.Application.csproj",
+  "expectedPackageFiles": [
+    "/home/marwan/.nuget/packages/fluentvalidation/12.1.1/fluentvalidation.12.1.1.nupkg.sha512",
+    "/home/marwan/.nuget/packages/fluentvalidation.dependencyinjectionextensions/12.1.1/fluentvalidation.dependencyinjectionextensions.12.1.1.nupkg.sha512",
+    "/home/marwan/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/2.1.0/microsoft.extensions.dependencyinjection.abstractions.2.1.0.nupkg.sha512",
+    "/home/marwan/.nuget/packages/microsoft.windowsdesktop.app.ref/10.0.1/microsoft.windowsdesktop.app.ref.10.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}

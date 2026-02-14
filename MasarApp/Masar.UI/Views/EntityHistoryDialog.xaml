@@ -1,0 +1,36 @@
+<Window x:Class="Masar.UI.Views.EntityHistoryDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" Title="سجل التغييرات" Height="450" Width="800" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="تتبع التغييرات لهذا العنصر" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+
+        <!-- Empty state message -->
+        <TextBlock Grid.Row="1" Text="لا توجد سجلات تغييرات حتى الآن. سيتم تسجيل أي تعديل يتم على هذا المشروع هنا." HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Foreground="Gray" TextWrapping="Wrap" Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+        <DataGrid Grid.Row="1" ItemsSource="{Binding History}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="التاريخ" Binding="{Binding ChangedAt, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Width="150"/>
+                <DataGridTextColumn Header="المستخدم" Binding="{Binding Username}" Width="120"/>
+                <DataGridTextColumn Header="العملية" Binding="{Binding ActionDisplay}" Width="80"/>
+                <DataGridTextColumn Header="التغيير" Binding="{Binding NewValues}" Width="*">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextWrapping" Value="Wrap"/>
+                            <Setter Property="MaxHeight" Value="60"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <Button Grid.Row="2" Content="إغلاق" IsCancel="True" HorizontalAlignment="Right" Margin="0,10,0,0" Width="80"/>
+    </Grid>
+</Window>

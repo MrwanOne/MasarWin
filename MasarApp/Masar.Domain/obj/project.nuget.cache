@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "tiHl3OTK18A=",
+  "success": true,
+  "projectFilePath": "/home/marwan/Desktop/Masar1/MasarApp/Masar.Domain/Masar.Domain.csproj",
+  "expectedPackageFiles": [
+    "/home/marwan/.nuget/packages/microsoft.windowsdesktop.app.ref/10.0.1/microsoft.windowsdesktop.app.ref.10.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}

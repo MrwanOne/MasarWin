@@ -1,0 +1,11 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "Masar.UI\\Masar.UI.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

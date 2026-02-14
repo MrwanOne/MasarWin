@@ -1,0 +1,156 @@
+CREATE DATABASE IF NOT EXISTS MasarDb
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+USE MasarDb;
+
+CREATE TABLE college (
+  college_id INT AUTO_INCREMENT PRIMARY KEY,
+  name_ar VARCHAR(200) NOT NULL,
+  name_en VARCHAR(200) NOT NULL,
+  code VARCHAR(50),
+  created_at DATETIME NOT NULL,
+  CONSTRAINT uq_college_name_ar UNIQUE (name_ar),
+  CONSTRAINT uq_college_name_en UNIQUE (name_en)
+) ENGINE=InnoDB;
+
+CREATE TABLE department (
+  department_id INT AUTO_INCREMENT PRIMARY KEY,
+  name_ar VARCHAR(200) NOT NULL,
+  name_en VARCHAR(200) NOT NULL,
+  code VARCHAR(50),
+  college_id INT NOT NULL,
+  head_of_department_id INT NULL,
+  created_at DATETIME NOT NULL,
+  CONSTRAINT uq_department_name_ar UNIQUE (college_id, name_ar),
+  CONSTRAINT uq_department_name_en UNIQUE (college_id, name_en),
+  CONSTRAINT fk_department_college FOREIGN KEY (college_id) REFERENCES college(college_id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE doctor (
+  doctor_id INT AUTO_INCREMENT PRIMARY KEY,
+  full_name VARCHAR(200) NOT NULL,
+  qualification VARCHAR(150) NOT NULL,
+  gender VARCHAR(20) NOT NULL,
+  email VARCHAR(200),
+  phone VARCHAR(50),
+  department_id INT NOT NULL,
+  CONSTRAINT fk_doctor_department FOREIGN KEY (department_id) REFERENCES department(department_id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+ALTER TABLE department
+  ADD CONSTRAINT fk_department_head FOREIGN KEY (head_of_department_id) REFERENCES doctor(doctor_id) ON DELETE SET NULL;
+
+CREATE TABLE committee (
+  committee_id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(200) NOT NULL,
+  department_id INT NOT NULL,
+  year INT NOT NULL,
+  created_at DATETIME NOT NULL,
+  CONSTRAINT fk_committee_department FOREIGN KEY (department_id) REFERENCES department(department_id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE team (
+  team_id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(200) NOT NULL,
+  department_id INT NOT NULL,
+  supervisor_id INT,
+  committee_id INT,
+  created_at DATETIME NOT NULL,
+  CONSTRAINT fk_team_department FOREIGN KEY (department_id) REFERENCES department(department_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_team_supervisor FOREIGN KEY (supervisor_id) REFERENCES doctor(doctor_id) ON DELETE SET NULL,
+  CONSTRAINT fk_team_committee FOREIGN KEY (committee_id) REFERENCES committee(committee_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE student (
+  student_id INT AUTO_INCREMENT PRIMARY KEY,
+  student_number VARCHAR(50) NOT NULL,
+  full_name VARCHAR(200) NOT NULL,
+  email VARCHAR(200),
+  phone VARCHAR(50),
+  department_id INT NOT NULL,
+  team_id INT,
+  enrollment_year INT NOT NULL,
+  CONSTRAINT uq_student_number UNIQUE (student_number),
+  CONSTRAINT fk_student_department FOREIGN KEY (department_id) REFERENCES department(department_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_student_team FOREIGN KEY (team_id) REFERENCES team(team_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE committee_member (
+  committee_id INT NOT NULL,
+  doctor_id INT NOT NULL,
+  role INT NOT NULL,
+  PRIMARY KEY (committee_id, doctor_id),
+  CONSTRAINT fk_committee_member_committee FOREIGN KEY (committee_id) REFERENCES committee(committee_id) ON DELETE CASCADE,
+  CONSTRAINT fk_committee_member_doctor FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE project (
+  project_id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(300) NOT NULL,
+  description TEXT,
+  beneficiary VARCHAR(200) NOT NULL,
+  status INT NOT NULL,
+  completion_rate DECIMAL(5,2) NOT NULL,
+  documentation_path VARCHAR(500),
+  proposed_at DATETIME NOT NULL,
+  approved_at DATETIME,
+  rejection_reason VARCHAR(500),
+  department_id INT NOT NULL,
+  team_id INT,
+  supervisor_id INT,
+  CONSTRAINT uq_project_title UNIQUE (title),
+  CONSTRAINT uq_project_team UNIQUE (team_id),
+  CONSTRAINT fk_project_department FOREIGN KEY (department_id) REFERENCES department(department_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_project_team FOREIGN KEY (team_id) REFERENCES team(team_id) ON DELETE SET NULL,
+  CONSTRAINT fk_project_supervisor FOREIGN KEY (supervisor_id) REFERENCES doctor(doctor_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE discussion (
+  discussion_id INT AUTO_INCREMENT PRIMARY KEY,
+  team_id INT NOT NULL,
+  committee_id INT NOT NULL,
+  start_time DATETIME NOT NULL,
+  end_time DATETIME NOT NULL,
+  place VARCHAR(200) NOT NULL,
+  supervisor_score DECIMAL(5,2) NOT NULL,
+  committee_score DECIMAL(5,2) NOT NULL,
+  final_score DECIMAL(5,2) NOT NULL,
+  report_text TEXT,
+  report_file_path VARCHAR(500),
+  created_at DATETIME NOT NULL,
+  CONSTRAINT fk_discussion_team FOREIGN KEY (team_id) REFERENCES team(team_id) ON DELETE CASCADE,
+  CONSTRAINT fk_discussion_committee FOREIGN KEY (committee_id) REFERENCES committee(committee_id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE users (
+  user_id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(100) NOT NULL,
+  password_hash VARCHAR(500) NOT NULL,
+  password_salt VARCHAR(200) NOT NULL,
+  role INT NOT NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL,
+  doctor_id INT,
+  student_id INT,
+  CONSTRAINT uq_users_username UNIQUE (username),
+  CONSTRAINT fk_users_doctor FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id) ON DELETE SET NULL,
+  CONSTRAINT fk_users_student FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE INDEX ix_department_college_id ON department(college_id);
+CREATE INDEX ix_department_head_id ON department(head_of_department_id);
+CREATE INDEX ix_doctor_department_id ON doctor(department_id);
+CREATE INDEX ix_team_department_id ON team(department_id);
+CREATE INDEX ix_team_supervisor_id ON team(supervisor_id);
+CREATE INDEX ix_team_committee_id ON team(committee_id);
+CREATE INDEX ix_student_department_id ON student(department_id);
+CREATE INDEX ix_student_team_id ON student(team_id);
+CREATE INDEX ix_committee_department_id ON committee(department_id);
+CREATE INDEX ix_committee_member_doctor_id ON committee_member(doctor_id);
+CREATE INDEX ix_project_department_id ON project(department_id);
+CREATE INDEX ix_project_supervisor_id ON project(supervisor_id);
+CREATE INDEX ix_discussion_team_id ON discussion(team_id);
+CREATE INDEX ix_discussion_committee_id ON discussion(committee_id);
+CREATE INDEX ix_users_doctor_id ON users(doctor_id);
+CREATE INDEX ix_users_student_id ON users(student_id);
