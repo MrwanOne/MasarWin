@@ -64,7 +64,10 @@ public class DoctorServiceV2 : IDoctorService
             Gender = dto.Gender?.Trim() ?? string.Empty,
             CollegeId = dto.CollegeId,
             DepartmentId = dto.DepartmentId,
-            Rank = Enum.TryParse<AcademicRank>(dto.Rank, out var rank) ? rank : AcademicRank.Lecturer
+            Rank = Enum.TryParse<AcademicRank>(dto.Rank, out var rank) ? rank : AcademicRank.Lecturer,
+            Specialization = dto.Specialization?.Trim() ?? string.Empty,
+            MaxSupervisionCount = dto.MaxSupervisionCount,
+            IsActive = dto.IsActive
         };
 
         await _doctors.AddAsync(entity, cancellationToken);
@@ -88,6 +91,9 @@ public class DoctorServiceV2 : IDoctorService
         entity.CollegeId = dto.CollegeId;
         entity.DepartmentId = dto.DepartmentId;
         entity.Rank = Enum.TryParse<AcademicRank>(dto.Rank, out var rank) ? rank : AcademicRank.Lecturer;
+        entity.Specialization = dto.Specialization?.Trim() ?? string.Empty;
+        entity.MaxSupervisionCount = dto.MaxSupervisionCount;
+        entity.IsActive = dto.IsActive;
 
         await _doctors.UpdateAsync(entity, cancellationToken);
         var updated = await GetByIdAsync(entity.DoctorId, cancellationToken);

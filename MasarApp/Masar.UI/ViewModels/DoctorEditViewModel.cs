@@ -259,6 +259,8 @@ public class DoctorEditViewModel : DialogViewModel
             Doctor.Gender = SelectedGender;
             Doctor.CollegeId = SelectedCollegeId;
             Doctor.Rank = SelectedRank ?? string.Empty;
+            Doctor.Specialization = Doctor.Specialization?.Trim() ?? string.Empty;
+            Doctor.MaxSupervisionCount = Doctor.MaxSupervisionCount;
             
             Result<DoctorDto> result;
             if (IsEditMode)

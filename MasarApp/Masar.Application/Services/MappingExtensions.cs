@@ -47,7 +47,10 @@ public static class MappingExtensions
             CollegeName = entity.College?.NameEn ?? entity.College?.NameAr ?? string.Empty,
             Rank = entity.Rank.ToString(),
             IsHeadOfDepartment = entity.DepartmentsHeaded != null && entity.DepartmentsHeaded.Any(),
-            HeadOfDepartmentName = entity.DepartmentsHeaded?.FirstOrDefault()?.NameEn ?? entity.DepartmentsHeaded?.FirstOrDefault()?.NameAr ?? string.Empty
+            HeadOfDepartmentName = entity.DepartmentsHeaded?.FirstOrDefault()?.NameEn ?? entity.DepartmentsHeaded?.FirstOrDefault()?.NameAr ?? string.Empty,
+            Specialization = entity.Specialization,
+            MaxSupervisionCount = entity.MaxSupervisionCount,
+            IsActive = entity.IsActive
         };
     }
 
@@ -66,7 +69,11 @@ public static class MappingExtensions
             CollegeName = entity.Department?.College?.NameEn ?? entity.Department?.College?.NameAr ?? string.Empty,
             TeamId = entity.TeamId,
             TeamName = entity.Team?.Name ?? string.Empty,
-            EnrollmentYear = entity.EnrollmentYear
+            EnrollmentYear = entity.EnrollmentYear,
+            Gender = entity.Gender,
+            GPA = entity.GPA ?? 0,
+            Level = entity.Level,
+            Status = entity.Status
         };
     }
 
@@ -138,6 +145,8 @@ public static class MappingExtensions
             TeamName = entity.Team?.Name ?? string.Empty,
             SupervisorId = entity.SupervisorId,
             SupervisorName = entity.Supervisor?.FullName ?? string.Empty,
+            TermId = entity.TermId,
+            TermName = entity.Term?.NameEn ?? entity.Term?.NameAr ?? string.Empty,
             Documents = entity.Documents?.Select(d => d.ToDto()).ToList() ?? new List<DocumentDto>()
         };
     }

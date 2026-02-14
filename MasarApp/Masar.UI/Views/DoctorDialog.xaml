@@ -1,7 +1,7 @@
 <Window x:Class="Masar.UI.Views.DoctorDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="{DynamicResource Title.Doctor}" Height="500" Width="640" WindowStartupLocation="CenterOwner"
+        Title="{DynamicResource Title.Doctor}" Height="600" Width="640" WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize" ShowInTaskbar="False">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -19,6 +19,8 @@
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
                 <Grid>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -63,6 +65,25 @@
                     <StackPanel Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Margin="0,0,0,12">
                         <TextBlock Text="{DynamicResource Label.College}" Margin="0,0,0,4" />
                         <ComboBox ItemsSource="{Binding Colleges}" DisplayMemberPath="NameEn" SelectedValuePath="CollegeId" SelectedValue="{Binding SelectedCollegeId}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="0" Grid.Row="4" Margin="0,0,12,12">
+                        <TextBlock Text="{DynamicResource Label.Department}" Margin="0,0,0,4" />
+                        <ComboBox ItemsSource="{Binding Departments}" DisplayMemberPath="NameEn" SelectedValuePath="DepartmentId" SelectedValue="{Binding SelectedDepartmentId}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Grid.Row="4" Margin="0,0,0,12">
+                        <TextBlock Text="{DynamicResource Label.Specialization}" Margin="0,0,0,4" />
+                        <TextBox Text="{Binding Doctor.Specialization}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="0" Grid.Row="5" Margin="0,0,12,12">
+                        <TextBlock Text="{DynamicResource Label.MaxSupervision}" Margin="0,0,0,4" />
+                        <TextBox Text="{Binding Doctor.MaxSupervisionCount}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Grid.Row="5" Margin="0,0,0,12">
+                        <CheckBox Content="{DynamicResource Label.IsActive}" IsChecked="{Binding Doctor.IsActive}" VerticalAlignment="Bottom" Margin="0,20,0,0" />
                     </StackPanel>
                 </Grid>
             </ScrollViewer>

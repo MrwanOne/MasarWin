@@ -132,6 +132,10 @@
     <sys:String x:Key="Label.Phone">رقم الهاتف</sys:String>
     <sys:String x:Key="Label.Qualification">المؤهل العلمي</sys:String>
     <sys:String x:Key="Label.Gender">الجنس</sys:String>
+    <sys:String x:Key="Label.GPA">المعدل</sys:String>
+    <sys:String x:Key="Label.Level">المستوى</sys:String>
+    <sys:String x:Key="Label.Specialization">التخصص</sys:String>
+    <sys:String x:Key="Label.MaxSupervision">الحد الأقصى للإشراف</sys:String>
     <sys:String x:Key="Label.TeamName">اسم الفريق</sys:String>
     <sys:String x:Key="Label.Role">الدور</sys:String>
     <sys:String x:Key="Label.Active">مفعل</sys:String>

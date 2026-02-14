@@ -15,4 +15,7 @@ public class DoctorDto
     public string Rank { get; set; } = string.Empty;
     public bool IsHeadOfDepartment { get; set; }
     public string HeadOfDepartmentName { get; set; } = string.Empty;
+    public string Specialization { get; set; } = string.Empty;
+    public int MaxSupervisionCount { get; set; }
+    public bool IsActive { get; set; } = true;
 }

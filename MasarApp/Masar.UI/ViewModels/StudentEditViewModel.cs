@@ -1,7 +1,9 @@
 using Masar.Application.Common;
 using Masar.Application.DTOs;
 using Masar.Application.Services;
+using Masar.Domain.Enums;
 using Masar.UI.Controls;
+using Masar.UI.Models;
 using Masar.UI.Services;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -21,6 +23,8 @@ public class StudentEditViewModel : DialogViewModel
     public ObservableCollection<CollegeDto> Colleges { get; } = new();
     public ObservableCollection<DepartmentDto> Departments { get; } = new();
     public ObservableCollection<TeamDto> Teams { get; } = new();
+    public ObservableCollection<OptionItem<string>> Genders { get; } = new();
+    public ObservableCollection<OptionItem<string>> StatusOptions { get; } = new();
 
     private StudentDto _student = new();
     public StudentDto Student
@@ -40,6 +44,20 @@ public class StudentEditViewModel : DialogViewModel
                 _ = LoadDepartmentsAsync();
             }
         }
+    }
+
+    private string? _selectedGender;
+    public string? SelectedGender
+    {
+        get => _selectedGender;
+        set => SetProperty(ref _selectedGender, value);
+    }
+
+    private string? _selectedStatus;
+    public string? SelectedStatus
+    {
+        get => _selectedStatus;
+        set => SetProperty(ref _selectedStatus, value);
     }
 
     public bool IsEditMode { get; }
@@ -66,9 +84,36 @@ public class StudentEditViewModel : DialogViewModel
         Student = student ?? new StudentDto();
         IsEditMode = student != null;
 
+        LoadGenderOptions();
+        LoadStatusOptions();
+        SelectedGender = string.IsNullOrWhiteSpace(Student.Gender) ? null : Student.Gender;
+        SelectedStatus = IsEditMode ? Student.Status.ToString() : StudentStatus.Active.ToString();
+
         SaveCommand = new AsyncRelayCommand(SaveAsync);
         CancelCommand = new RelayCommand(_ => Close(false));
         _localizationService.LanguageChanged += OnLanguageChanged;
+    }
+
+    private void LoadGenderOptions()
+    {
+        var current = SelectedGender;
+        Genders.Clear();
+        Genders.Add(new OptionItem<string>(null, Placeholder("Placeholder.SelectGender")));
+        Genders.Add(new OptionItem<string>("Male", _localizationService.IsArabic ? "ذكر" : "Male"));
+        Genders.Add(new OptionItem<string>("Female", _localizationService.IsArabic ? "أنثى" : "Female"));
+        SelectedGender = current;
+    }
+
+    private void LoadStatusOptions()
+    {
+        var current = SelectedStatus;
+        StatusOptions.Clear();
+        StatusOptions.Add(new OptionItem<string>(StudentStatus.Active.ToString(), _localizationService.IsArabic ? "منتظم" : "Active"));
+        StatusOptions.Add(new OptionItem<string>(StudentStatus.Graduated.ToString(), _localizationService.IsArabic ? "متخرج" : "Graduated"));
+        StatusOptions.Add(new OptionItem<string>(StudentStatus.Withdrawn.ToString(), _localizationService.IsArabic ? "منسحب" : "Withdrawn"));
+        StatusOptions.Add(new OptionItem<string>(StudentStatus.Suspended.ToString(), _localizationService.IsArabic ? "موقوف" : "Suspended"));
+        StatusOptions.Add(new OptionItem<string>(StudentStatus.Deferred.ToString(), _localizationService.IsArabic ? "مؤجل" : "Deferred"));
+        SelectedStatus = current;
     }
 
     public async Task LoadAsync()
@@ -151,6 +196,8 @@ public class StudentEditViewModel : DialogViewModel
 
     private void OnLanguageChanged(object? sender, System.EventArgs e)
     {
+        LoadGenderOptions();
+        LoadStatusOptions();
         _ = LoadAsync();
     }
 
@@ -172,6 +219,9 @@ public class StudentEditViewModel : DialogViewModel
 
             Student.CollegeId = SelectedCollegeId;
             Student.TeamId = Student.TeamId == 0 ? null : Student.TeamId;
+            Student.Gender = SelectedGender ?? string.Empty;
+            if (Enum.TryParse<StudentStatus>(SelectedStatus, out var status))
+                Student.Status = status;
             
             Result<StudentDto> result;
             if (IsEditMode)

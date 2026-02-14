@@ -135,6 +135,10 @@
     <sys:String x:Key="Label.Phone">Phone</sys:String>
     <sys:String x:Key="Label.Qualification">Qualification</sys:String>
     <sys:String x:Key="Label.Gender">Gender</sys:String>
+    <sys:String x:Key="Label.GPA">GPA</sys:String>
+    <sys:String x:Key="Label.Level">Level</sys:String>
+    <sys:String x:Key="Label.Specialization">Specialization</sys:String>
+    <sys:String x:Key="Label.MaxSupervision">Max Supervision</sys:String>
     <sys:String x:Key="Label.TeamName">Team Name</sys:String>
     <sys:String x:Key="Label.Role">Role</sys:String>
     <sys:String x:Key="Label.Active">Active</sys:String>

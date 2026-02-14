@@ -1,4 +1,6 @@
-﻿namespace Masar.Application.DTOs;
+﻿using Masar.Domain.Enums;
+
+namespace Masar.Application.DTOs;
 
 public class StudentDto
 {
@@ -14,4 +16,8 @@ public class StudentDto
     public int? TeamId { get; set; }
     public string TeamName { get; set; } = string.Empty;
     public int EnrollmentYear { get; set; }
+    public string Gender { get; set; } = string.Empty;
+    public decimal GPA { get; set; }
+    public int Level { get; set; }
+    public StudentStatus Status { get; set; }
 }

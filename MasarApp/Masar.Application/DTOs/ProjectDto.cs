@@ -24,5 +24,7 @@ public class ProjectDto
     public int? SupervisorId { get; set; }
     public string? SupervisorName { get; set; } = string.Empty;
     public string? StatusChangeReason { get; set; }
+    public int? TermId { get; set; }
+    public string TermName { get; set; } = string.Empty;
     public List<DocumentDto> Documents { get; set; } = new();
 }

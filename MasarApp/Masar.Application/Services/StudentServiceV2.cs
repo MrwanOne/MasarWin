@@ -70,7 +70,11 @@ public class StudentServiceV2 : IStudentService
             Phone = dto.Phone?.Trim() ?? string.Empty,
             DepartmentId = dto.DepartmentId,
             TeamId = dto.TeamId == 0 ? null : dto.TeamId,
-            EnrollmentYear = dto.EnrollmentYear
+            EnrollmentYear = dto.EnrollmentYear,
+            Gender = dto.Gender?.Trim() ?? string.Empty,
+            GPA = dto.GPA,
+            Level = dto.Level,
+            Status = dto.Status
         };
 
         await _students.AddAsync(entity, cancellationToken);
@@ -98,6 +102,10 @@ public class StudentServiceV2 : IStudentService
         entity.DepartmentId = dto.DepartmentId;
         entity.TeamId = dto.TeamId == 0 ? null : dto.TeamId;
         entity.EnrollmentYear = dto.EnrollmentYear;
+        entity.Gender = dto.Gender?.Trim() ?? string.Empty;
+        entity.GPA = dto.GPA;
+        entity.Level = dto.Level;
+        entity.Status = dto.Status;
 
         await _students.UpdateAsync(entity, cancellationToken);
         var updated = await GetByIdAsync(entity.StudentId, cancellationToken);
