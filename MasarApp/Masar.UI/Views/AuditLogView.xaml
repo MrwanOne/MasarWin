@@ -87,8 +87,20 @@
                         <DataGridTextColumn Header="الكيان" Binding="{Binding EntityName}" Width="120"/>
                         <DataGridTextColumn Header="معرف" Binding="{Binding EntityId}" Width="80"/>
                         <DataGridTextColumn Header="المستخدم" Binding="{Binding Username}" Width="120"/>
-                        <DataGridTextColumn Header="القيم السابقة" Binding="{Binding OldValues}" Width="*"/>
-                        <DataGridTextColumn Header="القيم الجديدة" Binding="{Binding NewValues}" Width="*"/>
+                        <DataGridTemplateColumn Header="القيم السابقة" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding OldValues}" TextWrapping="Wrap" Padding="4,6" VerticalAlignment="Top" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="القيم الجديدة" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding NewValues}" TextWrapping="Wrap" Padding="4,6" VerticalAlignment="Top" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>

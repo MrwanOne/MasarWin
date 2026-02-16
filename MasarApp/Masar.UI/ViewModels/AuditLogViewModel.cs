@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Masar.UI.ViewModels;
@@ -164,8 +165,84 @@ public class AuditLogItemViewModel
         ActionDisplay = GetActionDisplay(log.Action);
         Username = log.Username;
         ChangedAt = log.ChangedAt;
-        OldValues = log.OldValues;
-        NewValues = log.NewValues;
+        OldValues = FormatValues(log.OldValues);
+        NewValues = FormatValues(log.NewValues);
+    }
+
+    private static readonly HashSet<string> HiddenFields = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "CreatedAt", "CreatedByUserId", "UpdatedAt", "UpdatedByUserId",
+        "IsDeleted", "PasswordHash", "PasswordSalt"
+    };
+
+    private static readonly Dictionary<string, string> FieldLabels = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Name"] = "الاسم",
+        ["NameAr"] = "الاسم (عربي)",
+        ["NameEn"] = "الاسم (إنجليزي)",
+        ["FullName"] = "الاسم الكامل",
+        ["Email"] = "البريد",
+        ["Phone"] = "الهاتف",
+        ["Title"] = "العنوان",
+        ["Description"] = "الوصف",
+        ["Status"] = "الحالة",
+        ["Code"] = "الرمز",
+        ["Gender"] = "الجنس",
+        ["Username"] = "اسم المستخدم",
+        ["Role"] = "الدور",
+        ["IsActive"] = "نشط",
+        ["StudentNumber"] = "الرقم الجامعي",
+        ["GPA"] = "المعدل",
+        ["Level"] = "المستوى",
+        ["Qualification"] = "المؤهل",
+        ["Specialization"] = "التخصص",
+        ["Rank"] = "الرتبة",
+        ["DepartmentId"] = "القسم",
+        ["CollegeId"] = "الكلية",
+        ["TeamId"] = "الفريق",
+        ["SupervisorId"] = "المشرف",
+        ["CommitteeId"] = "اللجنة",
+        ["MaxSupervisionCount"] = "الحد الأقصى للإشراف",
+        ["EnrollmentYear"] = "سنة القبول",
+        ["CompletionRate"] = "نسبة الإنجاز",
+        ["Place"] = "المكان",
+        ["Beneficiary"] = "الجهة المستفيدة",
+    };
+
+    private static string FormatValues(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+            return string.Empty;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var lines = new List<string>();
+
+            foreach (var prop in doc.RootElement.EnumerateObject())
+            {
+                if (HiddenFields.Contains(prop.Name))
+                    continue;
+
+                var label = FieldLabels.TryGetValue(prop.Name, out var ar) ? ar : prop.Name;
+                var value = prop.Value.ValueKind switch
+                {
+                    JsonValueKind.Null => "-",
+                    JsonValueKind.True => "نعم",
+                    JsonValueKind.False => "لا",
+                    JsonValueKind.String => string.IsNullOrEmpty(prop.Value.GetString()) ? "-" : prop.Value.GetString()!,
+                    _ => prop.Value.ToString()
+                };
+
+                lines.Add($"{label}: {value}");
+            }
+
+            return string.Join("\n", lines);
+        }
+        catch
+        {
+            return json ?? string.Empty;
+        }
     }
 
     private static string GetActionDisplay(string action) => action switch
