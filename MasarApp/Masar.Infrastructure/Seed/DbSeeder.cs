@@ -53,8 +53,8 @@ public static class DbSeeder
         if (!await context.EvaluationCriteria.AnyAsync(cancellationToken))
         {
             context.EvaluationCriteria.AddRange(
-                new EvaluationCriteria { NameAr = "التطبيق والبرمجة", MaxScore = 50, Weight = 0.5m, DisplayOrder = 1, IsActive = true },
-                new EvaluationCriteria { NameAr = "التقديم والتقرير", MaxScore = 50, Weight = 0.5m, DisplayOrder = 2, IsActive = true }
+                new EvaluationCriteria { NameAr = "التطبيق والبرمجة", NameEn = "Implementation & Programming", DescriptionAr = "تقييم جودة التطبيق والبرمجة", DescriptionEn = "Evaluate implementation and programming quality", MaxScore = 50, Weight = 0.5m, DisplayOrder = 1, IsActive = true },
+                new EvaluationCriteria { NameAr = "التقديم والتقرير", NameEn = "Presentation & Report", DescriptionAr = "تقييم جودة التقديم والتقرير", DescriptionEn = "Evaluate presentation and report quality", MaxScore = 50, Weight = 0.5m, DisplayOrder = 2, IsActive = true }
             );
             await context.SaveChangesAsync(cancellationToken);
         }
