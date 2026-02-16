@@ -1,5 +1,7 @@
 using Masar.Application.DTOs;
+using Masar.Application.Interfaces;
 using Masar.Application.Reporting;
+using Masar.Application.Services;
 using Masar.UI.Controls;
 using Masar.UI.Models;
 using Masar.UI.Services;
@@ -110,6 +112,12 @@ public class ReportsViewModel : ViewModelBase
         GenerateReportCommand = new AsyncRelayCommand(GenerateReportAsync);
         ExportPdfCommand = new AsyncRelayCommand(ExportPdfAsync);
         _localizationService.LanguageChanged += OnLanguageChanged;
+    }
+
+    public async Task LoadAsync()
+    {
+        LoadLookups();
+        await Task.CompletedTask;
     }
 
     public async void LoadLookups()

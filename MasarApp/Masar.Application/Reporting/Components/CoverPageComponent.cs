@@ -2,11 +2,12 @@ using Masar.Application.DTOs;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using System.Reflection;
 
 namespace Masar.Application.Reporting.Components;
 
 /// <summary>
-/// مكون صفحة الغلاف الأكاديمية
+/// مكون صفحة الغلاف الأكاديمية مع شعار الجامعة
 /// </summary>
 public class CoverPageComponent : IComponent
 {
@@ -27,13 +28,37 @@ public class CoverPageComponent : IComponent
             .Padding(30)
             .Column(column =>
         {
-            column.Spacing(20);
+            column.Spacing(15);
 
             // المساحة العلوية
-            column.Item().PaddingTop(50);
+            column.Item().PaddingTop(30);
+
+            // شعار الجامعة
+            try
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var resourceName = assembly.GetManifestResourceNames()
+                    .FirstOrDefault(n => n.EndsWith("university_logo.png"));
+                
+                if (resourceName != null)
+                {
+                    using var stream = assembly.GetManifestResourceStream(resourceName);
+                    if (stream != null)
+                    {
+                        using var ms = new MemoryStream();
+                        stream.CopyTo(ms);
+                        var logoBytes = ms.ToArray();
+                        column.Item().AlignCenter().Width(120).Image(logoBytes);
+                    }
+                }
+            }
+            catch
+            {
+                // إذا فشل تحميل الشعار، نتابع بدونه
+            }
 
             // خط زخرفي علوي
-            column.Item().LineHorizontal(3).LineColor(Colors.Blue.Darken3);
+            column.Item().PaddingTop(10).LineHorizontal(3).LineColor(Colors.Blue.Darken3);
 
             // اسم الجامعة
             column.Item().AlignCenter().Text(_isArabic ? "جامعة إقليم سبأ" : "Saba Region University")
@@ -48,7 +73,7 @@ public class CoverPageComponent : IComponent
                 .FontColor(Colors.Blue.Darken2);
 
             // خط فاصل
-            column.Item().PaddingVertical(20).LineHorizontal(2).LineColor(Colors.Blue.Lighten2);
+            column.Item().PaddingVertical(15).LineHorizontal(2).LineColor(Colors.Blue.Lighten2);
 
             // عنوان التقرير
             column.Item().AlignCenter().Text(_reportData.Title)
@@ -70,7 +95,7 @@ public class CoverPageComponent : IComponent
                 .FontColor(Colors.Grey.Darken1);
 
             // المساحة السفلية
-            column.Item().PaddingTop(80);
+            column.Item().PaddingTop(60);
 
             // التاريخ
             column.Item().AlignCenter()

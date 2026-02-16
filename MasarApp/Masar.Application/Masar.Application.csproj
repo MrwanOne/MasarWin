@@ -15,4 +15,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Reporting\university_logo.png" />
+  </ItemGroup>
+
 </Project>
