@@ -12,6 +12,7 @@ public class ReportPreviewViewModel : DialogViewModel
 
     public RelayCommand PrintCommand { get; }
     public RelayCommand CloseCommand { get; }
+    public RelayCommand ExportCommand { get; }
 
     public ReportPreviewViewModel(FlowDocument document, ILocalizationService localizationService)
     {
@@ -19,6 +20,7 @@ public class ReportPreviewViewModel : DialogViewModel
         _localizationService = localizationService;
         PrintCommand = new RelayCommand(_ => Print());
         CloseCommand = new RelayCommand(_ => Close(false));
+        ExportCommand = new RelayCommand(_ => Close(true));
     }
 
     private void Print()

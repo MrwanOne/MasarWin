@@ -12,6 +12,7 @@
             <DockPanel>
                 <TextBlock Text="{DynamicResource Title.ReportPreview}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" DockPanel.Dock="Left" />
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                    <Button Content="{DynamicResource Button.ExportPdf}" Command="{Binding ExportCommand}" Margin="0,0,8,0" Padding="16,8" Style="{StaticResource SecondaryButtonStyle}" />
                     <Button Content="{DynamicResource Button.Print}" Command="{Binding PrintCommand}" Margin="0,0,8,0" Padding="16,8" />
                     <Button Content="{DynamicResource Button.Close}" Command="{Binding CloseCommand}" Style="{StaticResource GhostButtonStyle}" Padding="16,8" />
                 </StackPanel>

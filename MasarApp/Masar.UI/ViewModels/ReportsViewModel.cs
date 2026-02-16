@@ -1,11 +1,10 @@
 using Masar.Application.DTOs;
 using Masar.Application.Reporting;
-using Masar.Application.Services;
-using Masar.Domain.Enums;
-using Masar.UI.Models;
 using Masar.UI.Controls;
+using Masar.UI.Models;
 using Masar.UI.Services;
 using Masar.UI.Views;
+using Masar.Domain.Enums;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -113,41 +112,30 @@ public class ReportsViewModel : ViewModelBase
         _localizationService.LanguageChanged += OnLanguageChanged;
     }
 
-    public Task LoadAsync()
-    {
-        LoadLookups();
-        return Task.CompletedTask;
-    }
-
-    private async void LoadLookups()
+    public async void LoadLookups()
     {
         try
         {
             Colleges.Clear();
-            var collegePlaceholder = _localizationService.GetString("Placeholder.SelectCollege");
-            Colleges.Add(new CollegeDto { CollegeId = 0, NameEn = collegePlaceholder, NameAr = collegePlaceholder });
-            foreach (var college in await _collegeService.GetAllAsync())
+            Colleges.Add(new CollegeDto
             {
-                Colleges.Add(college);
-            }
+                CollegeId = 0,
+                NameAr = _localizationService.GetString("Placeholder.SelectCollege"),
+                NameEn = _localizationService.GetString("Placeholder.SelectCollege")
+            });
+            var collegesToAdd = await _collegeService.GetAllAsync();
+            foreach (var c in collegesToAdd) Colleges.Add(c);
+            SelectedCollegeId = 0;
 
+            var allDepts = await _departmentService.GetAllAsync();
             Departments.Clear();
-            var departmentPlaceholder = _localizationService.GetString("Placeholder.SelectDepartment");
-            Departments.Add(new DepartmentDto { DepartmentId = 0, NameEn = departmentPlaceholder, NameAr = departmentPlaceholder });
-            foreach (var dept in await _departmentService.GetAllAsync())
-            {
-                Departments.Add(dept);
-            }
+            foreach (var d in allDepts) Departments.Add(d);
 
             _allSupervisors = (await _doctorService.GetAllAsync()).ToList();
+            FilterSupervisors();
 
             RefreshStatuses();
             LoadYearOptions();
-
-            SelectedCollegeId = SelectedCollegeId ?? 0;
-            LoadDepartmentsForCollege();
-            FilterSupervisors();
-            SelectedYear = SelectedYear;
         }
         catch (Exception ex)
         {
@@ -158,43 +146,44 @@ public class ReportsViewModel : ViewModelBase
     private void LoadDepartmentsForCollege()
     {
         FilteredDepartments.Clear();
-        var placeholder = _localizationService.GetString("Placeholder.SelectDepartment");
-        FilteredDepartments.Add(new DepartmentDto { DepartmentId = 0, NameEn = placeholder, NameAr = placeholder });
-
-        if (!SelectedCollegeId.HasValue || SelectedCollegeId.Value == 0)
+        FilteredDepartments.Add(new DepartmentDto
         {
-            SelectedDepartmentId = 0;
-            return;
+            DepartmentId = 0,
+            NameAr = _localizationService.GetString("Placeholder.SelectDepartment"),
+            NameEn = _localizationService.GetString("Placeholder.SelectDepartment")
+        });
+
+        var filtered = Departments.AsEnumerable();
+        if (SelectedCollegeId.HasValue && SelectedCollegeId.Value != 0)
+        {
+            filtered = filtered.Where(d => d.CollegeId == SelectedCollegeId.Value);
         }
 
-        foreach (var dept in Departments.Where(d => d.CollegeId == SelectedCollegeId.Value))
+        foreach (var dept in filtered.OrderBy(d => d.NameAr))
         {
             FilteredDepartments.Add(dept);
         }
 
-        SelectedDepartmentId = SelectedDepartmentId.HasValue && SelectedDepartmentId.Value != 0
-            ? SelectedDepartmentId
-            : 0;
-
-        FilterSupervisors();
+        SelectedDepartmentId = 0;
     }
 
     private void FilterSupervisors()
     {
         Supervisors.Clear();
-        var placeholder = _localizationService.GetString("Placeholder.SelectSupervisor");
-        Supervisors.Add(new DoctorDto { DoctorId = 0, FullName = placeholder });
+        Supervisors.Add(new DoctorDto
+        {
+            DoctorId = 0,
+            FullName = _localizationService.GetString("Placeholder.SelectSupervisor")
+        });
 
         var filtered = _allSupervisors.AsEnumerable();
 
         if (SelectedDepartmentId.HasValue && SelectedDepartmentId.Value != 0)
         {
-            // Filter by department (most specific)
             filtered = filtered.Where(d => d.DepartmentId == SelectedDepartmentId.Value);
         }
         else if (SelectedCollegeId.HasValue && SelectedCollegeId.Value != 0)
         {
-            // Filter by college
             filtered = filtered.Where(d => d.CollegeId == SelectedCollegeId.Value);
         }
 
@@ -265,13 +254,22 @@ public class ReportsViewModel : ViewModelBase
             if (report.Projects == null || report.Projects.Count == 0)
             {
                 _dialogService.ShowMessage(
-                    _localizationService.GetString("Message.NoProjects") ?? "No projects to export",
+                    _localizationService.GetString("Message.NoProjects") ?? "لا توجد مشاريع للتصدير",
                     _localizationService.GetString("Title.Reports"));
                 return;
             }
 
-            // تحديد اللغة بناءً على اللغة الحالية
-            var isArabic = _localizationService.CurrentLanguage == "ar";
+            var isArabic = _localizationService.IsArabic;
+
+            // معاينة التقرير أولاً عبر FlowDocument
+            var previewDocument = _documentBuilder.BuildProjectReport(report);
+            var previewVm = new ReportPreviewViewModel(previewDocument, _localizationService);
+            var previewWindow = new ReportPreviewWindow(previewVm);
+            var previewResult = _dialogService.ShowDialog(previewWindow);
+
+            // إذا أغلق المستخدم نافذة المعاينة بدون تأكيد، لا نصدر
+            if (previewResult != true)
+                return;
 
             // تسمية الملف حسب اللغة
             var fileName = isArabic
@@ -296,7 +294,7 @@ public class ReportsViewModel : ViewModelBase
 
                 _academicReportBuilder.GenerateProjectReport(report, outputPath, isArabic);
                 
-                var message = _localizationService.GetString("Message.ReportExported") ?? "Report exported successfully!";
+                var message = _localizationService.GetString("Message.ReportExported") ?? "تم تصدير التقرير بنجاح!";
                 _dialogService.ShowMessage(message, _localizationService.GetString("Title.Reports"));
             }
         }

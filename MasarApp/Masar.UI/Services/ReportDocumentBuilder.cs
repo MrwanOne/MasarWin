@@ -1,4 +1,5 @@
 using Masar.Application.DTOs;
+using Masar.Application.Reporting;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
@@ -16,6 +17,8 @@ public class ReportDocumentBuilder
 
     public FlowDocument BuildProjectReport(ReportResultDto result)
     {
+        var isArabic = _localizationService.IsArabic;
+        
         var document = new FlowDocument
         {
             PageWidth = 1200,
@@ -29,6 +32,7 @@ public class ReportDocumentBuilder
             document.FlowDirection = flowDirection;
         }
 
+        // عنوان التقرير
         var title = new Paragraph(new Run(result.Title))
         {
             FontSize = 20,
@@ -38,6 +42,21 @@ public class ReportDocumentBuilder
         };
         document.Blocks.Add(title);
 
+        // التحقق من وجود بيانات
+        if (result.Projects == null || result.Projects.Count == 0)
+        {
+            var emptyMsg = new Paragraph(new Run(
+                _localizationService.GetString("Message.NoProjects")))
+            {
+                FontSize = 14,
+                Foreground = new SolidColorBrush(Color.FromRgb(107, 114, 128)),
+                TextAlignment = TextAlignment.Center,
+                Margin = new Thickness(0, 40, 0, 0)
+            };
+            document.Blocks.Add(emptyMsg);
+            return document;
+        }
+
         var table = new Table
         {
             CellSpacing = 0,
@@ -45,64 +64,80 @@ public class ReportDocumentBuilder
             BorderThickness = new Thickness(1)
         };
 
-        table.Columns.Add(new TableColumn { Width = new GridLength(200) }); // Title
-        table.Columns.Add(new TableColumn { Width = new GridLength(140) }); // Team
-        table.Columns.Add(new TableColumn { Width = new GridLength(140) }); // Beneficiary
-        table.Columns.Add(new TableColumn { Width = new GridLength(140) }); // Supervisor
-        table.Columns.Add(new TableColumn { Width = new GridLength(140) }); // Department
-        table.Columns.Add(new TableColumn { Width = new GridLength(80) });  // Year
-        table.Columns.Add(new TableColumn { Width = new GridLength(120) }); // Status
-        table.Columns.Add(new TableColumn { Width = new GridLength(100) }); // Completion
+        table.Columns.Add(new TableColumn { Width = new GridLength(200) }); // العنوان
+        table.Columns.Add(new TableColumn { Width = new GridLength(140) }); // الفريق
+        table.Columns.Add(new TableColumn { Width = new GridLength(160) }); // المشرف
+        table.Columns.Add(new TableColumn { Width = new GridLength(160) }); // القسم
+        table.Columns.Add(new TableColumn { Width = new GridLength(80) });  // السنة
+        table.Columns.Add(new TableColumn { Width = new GridLength(120) }); // الحالة
+        table.Columns.Add(new TableColumn { Width = new GridLength(100) }); // الإنجاز
 
         var headerGroup = new TableRowGroup();
         var headerRow = new TableRow();
-        headerRow.Cells.Add(CreateHeaderCell(_localizationService.GetString("Report.HeaderTitle")));
-        headerRow.Cells.Add(CreateHeaderCell(_localizationService.GetString("Grid.Team")));
-        headerRow.Cells.Add(CreateHeaderCell(_localizationService.GetString("Grid.Beneficiary")));
-        headerRow.Cells.Add(CreateHeaderCell(_localizationService.GetString("Report.HeaderSupervisor")));
-        headerRow.Cells.Add(CreateHeaderCell(_localizationService.GetString("Report.HeaderDepartment")));
-        headerRow.Cells.Add(CreateHeaderCell(_localizationService.GetString("Label.Year")));
-        headerRow.Cells.Add(CreateHeaderCell(_localizationService.GetString("Report.HeaderStatus")));
-        headerRow.Cells.Add(CreateHeaderCell(_localizationService.GetString("Report.HeaderCompletion")));
+        headerRow.Cells.Add(CreateHeaderCell(isArabic ? "عنوان المشروع" : "Project Title"));
+        headerRow.Cells.Add(CreateHeaderCell(isArabic ? "الفريق" : "Team"));
+        headerRow.Cells.Add(CreateHeaderCell(isArabic ? "المشرف" : "Supervisor"));
+        headerRow.Cells.Add(CreateHeaderCell(isArabic ? "القسم" : "Department"));
+        headerRow.Cells.Add(CreateHeaderCell(isArabic ? "السنة" : "Year"));
+        headerRow.Cells.Add(CreateHeaderCell(isArabic ? "الحالة" : "Status"));
+        headerRow.Cells.Add(CreateHeaderCell(isArabic ? "الإنجاز" : "Progress"));
         headerGroup.Rows.Add(headerRow);
         table.RowGroups.Add(headerGroup);
 
         var bodyGroup = new TableRowGroup();
+        int index = 0;
         foreach (var project in result.Projects)
         {
+            var isEven = index % 2 == 0;
             var row = new TableRow();
-            row.Cells.Add(CreateCell(project.Title));
-            row.Cells.Add(CreateCell(project.TeamName));
-            row.Cells.Add(CreateCell(project.Beneficiary));
-            row.Cells.Add(CreateCell(project.SupervisorName));
-            row.Cells.Add(CreateCell(project.DepartmentName));
+            if (isEven)
+                row.Background = new SolidColorBrush(Color.FromRgb(249, 250, 251));
+            
+            row.Cells.Add(CreateCell(project.Title ?? "-"));
+            row.Cells.Add(CreateCell(project.TeamName ?? "-"));
+            row.Cells.Add(CreateCell(project.SupervisorName ?? "-"));
+            row.Cells.Add(CreateCell(project.DepartmentName ?? "-"));
             row.Cells.Add(CreateCell(project.ProposedAt.Year.ToString()));
-            row.Cells.Add(CreateCell(project.Status.ToString()));
+            row.Cells.Add(CreateCell(ReportHelpers.GetStatusText(project.Status, isArabic)));
             row.Cells.Add(CreateCell($"{project.CompletionRate:0}%"));
             bodyGroup.Rows.Add(row);
+            index++;
         }
 
         table.RowGroups.Add(bodyGroup);
         document.Blocks.Add(table);
+
+        // إحصائية سريعة
+        var summary = new Paragraph();
+        summary.Margin = new Thickness(0, 12, 0, 0);
+        summary.FontSize = 13;
+        summary.Foreground = new SolidColorBrush(Color.FromRgb(75, 85, 99));
+        summary.Inlines.Add(new Run(isArabic ? "إجمالي المشاريع: " : "Total Projects: "));
+        summary.Inlines.Add(new Bold(new Run(result.Projects.Count.ToString())));
+        document.Blocks.Add(summary);
 
         return document;
     }
 
     private static TableCell CreateHeaderCell(string text)
     {
-        return new TableCell(new Paragraph(new Run(text)))
+        return new TableCell(new Paragraph(new Run(text))
         {
-            Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)),
             FontWeight = FontWeights.SemiBold,
-            Padding = new Thickness(6)
+        })
+        {
+            Background = new SolidColorBrush(Color.FromRgb(219, 234, 254)),
+            Padding = new Thickness(8, 6, 8, 6)
         };
     }
 
-    private static TableCell CreateCell(string text)
+    private static TableCell CreateCell(string? text)
     {
-        return new TableCell(new Paragraph(new Run(text)))
+        return new TableCell(new Paragraph(new Run(text ?? "-")))
         {
-            Padding = new Thickness(6)
+            Padding = new Thickness(8, 6, 8, 6),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(229, 231, 235)),
+            BorderThickness = new Thickness(0, 0, 0, 1)
         };
     }
 }
