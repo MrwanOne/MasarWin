@@ -27,7 +27,7 @@ public class HeaderFooterComponent
             .Row(row =>
             {
                 // الجانب الأيمن - اسم الجامعة
-                row.RelativeItem().Text(_isArabic ? "جامعة الملك سعود" : "King Saud University")
+                row.RelativeItem().Text(_isArabic ? "جامعة إقليم سبأ" : "Saba Region University")
                     .FontSize(10)
                     .FontColor(Colors.Grey.Darken1);
 

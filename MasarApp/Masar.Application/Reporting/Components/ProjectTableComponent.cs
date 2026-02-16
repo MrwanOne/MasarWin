@@ -38,14 +38,14 @@ public class ProjectTableComponent : IComponent
                 // تعريف الأعمدة
                 table.ColumnsDefinition(columns =>
                 {
-                    columns.ConstantColumn(40);  // #
-                    columns.RelativeColumn(3);   // العنوان
-                    columns.RelativeColumn(2);   // الفريق
-                    columns.RelativeColumn(2);   // المشرف
-                    columns.RelativeColumn(2);   // القسم
-                    columns.RelativeColumn(1);   // السنة
-                    columns.RelativeColumn(1.5f); // الحالة
-                    columns.RelativeColumn(1);   // الإنجاز
+                    columns.ConstantColumn(35);   // #
+                    columns.RelativeColumn(3);    // العنوان
+                    columns.RelativeColumn(2);    // الفريق
+                    columns.RelativeColumn(2.5f); // المشرف
+                    columns.RelativeColumn(2.5f); // القسم
+                    columns.ConstantColumn(50);   // السنة
+                    columns.RelativeColumn(2);    // الحالة
+                    columns.ConstantColumn(55);   // الإنجاز
                 });
 
                 // رأس الجدول

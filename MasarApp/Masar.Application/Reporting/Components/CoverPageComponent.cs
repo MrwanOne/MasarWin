@@ -36,13 +36,13 @@ public class CoverPageComponent : IComponent
             column.Item().LineHorizontal(3).LineColor(Colors.Blue.Darken3);
 
             // اسم الجامعة
-            column.Item().AlignCenter().Text(_isArabic ? "جامعة الملك سعود" : "King Saud University")
+            column.Item().AlignCenter().Text(_isArabic ? "جامعة إقليم سبأ" : "Saba Region University")
                 .FontSize(26)
                 .Bold()
                 .FontColor(Colors.Blue.Darken3);
 
             // اسم الكلية
-            column.Item().AlignCenter().Text(_isArabic ? "كلية علوم الحاسب والمعلومات" : "College of Computer and Information Sciences")
+            column.Item().AlignCenter().Text(_isArabic ? "كلية الحاسب الآلي" : "College of Computer Science")
                 .FontSize(18)
                 .SemiBold()
                 .FontColor(Colors.Blue.Darken2);

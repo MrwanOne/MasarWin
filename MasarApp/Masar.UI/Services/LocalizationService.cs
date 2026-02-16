@@ -14,7 +14,7 @@ public class LocalizationService : ILocalizationService
 
     public event EventHandler? LanguageChanged;
 
-    public string CurrentLanguage { get; private set; } = "en";
+    public string CurrentLanguage { get; private set; } = "ar";
 
     public bool IsArabic => CurrentLanguage == "ar";
 
