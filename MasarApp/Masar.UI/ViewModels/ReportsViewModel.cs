@@ -14,6 +14,7 @@ namespace Masar.UI.ViewModels;
 
 public class ReportsViewModel : ViewModelBase
 {
+    private System.Collections.Generic.List<DoctorDto> _allSupervisors = new();
     private readonly IReportService _reportService;
     private readonly ICollegeService _collegeService;
     private readonly IDepartmentService _departmentService;
@@ -46,7 +47,13 @@ public class ReportsViewModel : ViewModelBase
     public int? SelectedDepartmentId
     {
         get => _selectedDepartmentId;
-        set => SetProperty(ref _selectedDepartmentId, value);
+        set
+        {
+            if (SetProperty(ref _selectedDepartmentId, value))
+            {
+                FilterSupervisors();
+            }
+        }
     }
 
     private int? _selectedSupervisorId;
@@ -126,20 +133,14 @@ public class ReportsViewModel : ViewModelBase
                 Departments.Add(dept);
             }
 
-            Supervisors.Clear();
-            var supervisorPlaceholder = _localizationService.GetString("Placeholder.SelectSupervisor");
-            Supervisors.Add(new DoctorDto { DoctorId = 0, FullName = supervisorPlaceholder });
-            foreach (var doc in await _doctorService.GetAllAsync())
-            {
-                Supervisors.Add(doc);
-            }
+            _allSupervisors = (await _doctorService.GetAllAsync()).ToList();
 
             RefreshStatuses();
             LoadYearOptions();
 
             SelectedCollegeId = SelectedCollegeId ?? 0;
             LoadDepartmentsForCollege();
-            SelectedSupervisorId = SelectedSupervisorId ?? 0;
+            FilterSupervisors();
             SelectedYear = SelectedYear;
         }
         catch (Exception ex)
@@ -168,6 +169,35 @@ public class ReportsViewModel : ViewModelBase
         SelectedDepartmentId = SelectedDepartmentId.HasValue && SelectedDepartmentId.Value != 0
             ? SelectedDepartmentId
             : 0;
+
+        FilterSupervisors();
+    }
+
+    private void FilterSupervisors()
+    {
+        Supervisors.Clear();
+        var placeholder = _localizationService.GetString("Placeholder.SelectSupervisor");
+        Supervisors.Add(new DoctorDto { DoctorId = 0, FullName = placeholder });
+
+        var filtered = _allSupervisors.AsEnumerable();
+
+        if (SelectedDepartmentId.HasValue && SelectedDepartmentId.Value != 0)
+        {
+            // Filter by department (most specific)
+            filtered = filtered.Where(d => d.DepartmentId == SelectedDepartmentId.Value);
+        }
+        else if (SelectedCollegeId.HasValue && SelectedCollegeId.Value != 0)
+        {
+            // Filter by college
+            filtered = filtered.Where(d => d.CollegeId == SelectedCollegeId.Value);
+        }
+
+        foreach (var doc in filtered.OrderBy(d => d.FullName))
+        {
+            Supervisors.Add(doc);
+        }
+
+        SelectedSupervisorId = 0;
     }
 
     private async Task GenerateReportAsync()
