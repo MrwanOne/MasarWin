@@ -150,7 +150,7 @@ public class StudentEvaluationService : IStudentEvaluationService
         if (entity.CreatedByUserId.HasValue && entity.CreatedByUserId.Value > 0)
         {
             var user = await _users.GetByIdAsync(entity.CreatedByUserId.Value, cancellationToken);
-            evaluatedByName = user?.FullName ?? string.Empty;
+            evaluatedByName = user?.Doctor?.FullName ?? user?.Student?.FullName ?? user?.Username ?? string.Empty;
         }
 
         return new StudentEvaluationDto

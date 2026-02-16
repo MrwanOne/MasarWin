@@ -3,7 +3,6 @@ using Masar.Infrastructure.DbContext;
 using Masar.Infrastructure.Interceptors;
 using Masar.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Masar.Infrastructure;
@@ -16,9 +15,8 @@ public static class DependencyInjection
 
         services.AddDbContextFactory<MasarDbContext>((sp, options) =>
         {
-            options.UseSqlServer(connectionString)
-                   .AddInterceptors(sp.GetRequiredService<AuditInterceptor>())
-                   .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
+            options.UseOracle(connectionString)
+                   .AddInterceptors(sp.GetRequiredService<AuditInterceptor>());
         });
 
         services.AddTransient<ICollegeRepository, CollegeRepository>();

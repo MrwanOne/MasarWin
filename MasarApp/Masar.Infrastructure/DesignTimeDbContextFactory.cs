@@ -13,7 +13,7 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<MasarDbCon
     public MasarDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<MasarDbContext>();
-        optionsBuilder.UseSqlServer(@"Server=AIMAN\SQLEXPRESS;Database=MasarDb;Trusted_Connection=True;TrustServerCertificate=True;");
+        optionsBuilder.UseOracle(@"User Id=masar;Password=masar;Data Source=192.168.56.101:1521/FREEPDB1");
         return new MasarDbContext(optionsBuilder.Options);
     }
 }

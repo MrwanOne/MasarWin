@@ -244,7 +244,7 @@ public class MasarDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.Beneficiary).HasColumnName("beneficiary").HasMaxLength(200).IsRequired();
             entity.Property(e => e.Status).HasColumnName("status");
-            entity.Property(e => e.CompletionRate).HasColumnName("completion_rate");
+            entity.Property(e => e.CompletionRate).HasColumnName("completion_rate").HasPrecision(5, 2);
             entity.Property(e => e.DocumentationPath).HasColumnName("documentation_path").HasMaxLength(500);
             entity.Property(e => e.ProposedAt).HasColumnName("proposed_at");
             entity.Property(e => e.ApprovedAt).HasColumnName("approved_at");
@@ -331,9 +331,9 @@ public class MasarDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.StartTime).HasColumnName("start_time");
             entity.Property(e => e.EndTime).HasColumnName("end_time");
             entity.Property(e => e.Place).HasColumnName("place").HasMaxLength(200).IsRequired();
-            entity.Property(e => e.SupervisorScore).HasColumnName("supervisor_score");
-            entity.Property(e => e.CommitteeScore).HasColumnName("committee_score");
-            entity.Property(e => e.FinalScore).HasColumnName("final_score");
+            entity.Property(e => e.SupervisorScore).HasColumnName("supervisor_score").HasPrecision(5, 2);
+            entity.Property(e => e.CommitteeScore).HasColumnName("committee_score").HasPrecision(5, 2);
+            entity.Property(e => e.FinalScore).HasColumnName("final_score").HasPrecision(5, 2);
             entity.Property(e => e.ReportText).HasColumnName("report_text");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
