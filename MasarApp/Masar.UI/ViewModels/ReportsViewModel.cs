@@ -1,4 +1,5 @@
 using Masar.Application.DTOs;
+using Masar.Application.Reporting;
 using Masar.Application.Services;
 using Masar.Domain.Enums;
 using Masar.UI.Models;
@@ -22,6 +23,7 @@ public class ReportsViewModel : ViewModelBase
     private readonly ReportDocumentBuilder _documentBuilder;
     private readonly IDialogService _dialogService;
     private readonly ILocalizationService _localizationService;
+    private readonly IAcademicReportBuilder _academicReportBuilder;
 
     public ObservableCollection<CollegeDto> Colleges { get; } = new();
     public ObservableCollection<DepartmentDto> Departments { get; } = new();
@@ -85,6 +87,7 @@ public class ReportsViewModel : ViewModelBase
     }
 
     public AsyncRelayCommand GenerateReportCommand { get; }
+    public AsyncRelayCommand ExportPdfCommand { get; }
 
     public ReportsViewModel(
         IReportService reportService,
@@ -93,7 +96,8 @@ public class ReportsViewModel : ViewModelBase
         IDoctorService doctorService,
         ReportDocumentBuilder documentBuilder,
         IDialogService dialogService,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IAcademicReportBuilder academicReportBuilder)
     {
         _reportService = reportService;
         _collegeService = collegeService;
@@ -102,8 +106,10 @@ public class ReportsViewModel : ViewModelBase
         _documentBuilder = documentBuilder;
         _dialogService = dialogService;
         _localizationService = localizationService;
+        _academicReportBuilder = academicReportBuilder;
 
         GenerateReportCommand = new AsyncRelayCommand(GenerateReportAsync);
+        ExportPdfCommand = new AsyncRelayCommand(ExportPdfAsync);
         _localizationService.LanguageChanged += OnLanguageChanged;
     }
 
@@ -204,16 +210,7 @@ public class ReportsViewModel : ViewModelBase
     {
         try
         {
-            var filter = new ReportFilterDto
-            {
-                CollegeId = SelectedCollegeId == 0 ? null : SelectedCollegeId,
-                DepartmentId = SelectedDepartmentId == 0 ? null : SelectedDepartmentId,
-                SupervisorId = SelectedSupervisorId == 0 ? null : SelectedSupervisorId,
-                Status = SelectedStatus,
-                Year = SelectedYear,
-                ProjectName = string.IsNullOrWhiteSpace(ProjectName) ? null : ProjectName.Trim()
-            };
-
+            var filter = CreateFilter();
             var report = await _reportService.BuildProjectReportAsync(filter);
             var document = _documentBuilder.BuildProjectReport(report);
             var vm = new ReportPreviewViewModel(document, _localizationService);
@@ -255,5 +252,73 @@ public class ReportsViewModel : ViewModelBase
     private void OnLanguageChanged(object? sender, EventArgs e)
     {
         LoadLookups();
+    }
+
+    private async Task ExportPdfAsync()
+    {
+        try
+        {
+            var filter = CreateFilter();
+            var report = await _reportService.BuildProjectReportAsync(filter);
+
+            // التحقق من وجود بيانات
+            if (report.Projects == null || report.Projects.Count == 0)
+            {
+                _dialogService.ShowMessage(
+                    _localizationService.GetString("Message.NoProjects") ?? "No projects to export",
+                    _localizationService.GetString("Title.Reports"));
+                return;
+            }
+
+            // تحديد اللغة بناءً على اللغة الحالية
+            var isArabic = _localizationService.CurrentLanguage == "ar";
+
+            // تسمية الملف حسب اللغة
+            var fileName = isArabic
+                ? $"تقرير_المشاريع_{DateTime.Now:yyyyMMdd_HHmmss}.pdf"
+                : $"Report_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+
+            // فتح نافذة حفظ الملف
+            var saveDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "PDF Files (*.pdf)|*.pdf",
+                FileName = fileName,
+                DefaultExt = ".pdf",
+                Title = _localizationService.GetString("Dialog.SaveReport")
+            };
+
+            if (saveDialog.ShowDialog() == true)
+            {
+                // تحقق أمان المسار
+                var outputPath = System.IO.Path.GetFullPath(saveDialog.FileName);
+                if (!outputPath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                    outputPath += ".pdf";
+
+                _academicReportBuilder.GenerateProjectReport(report, outputPath, isArabic);
+                
+                var message = _localizationService.GetString("Message.ReportExported") ?? "Report exported successfully!";
+                _dialogService.ShowMessage(message, _localizationService.GetString("Title.Reports"));
+            }
+        }
+        catch (Exception ex)
+        {
+            _dialogService.ShowError(ex.Message, _localizationService.GetString("Title.Reports"));
+        }
+    }
+
+    /// <summary>
+    /// بناء فلتر التقرير من القيم المحددة
+    /// </summary>
+    private ReportFilterDto CreateFilter()
+    {
+        return new ReportFilterDto
+        {
+            CollegeId = SelectedCollegeId == 0 ? null : SelectedCollegeId,
+            DepartmentId = SelectedDepartmentId == 0 ? null : SelectedDepartmentId,
+            SupervisorId = SelectedSupervisorId == 0 ? null : SelectedSupervisorId,
+            Status = SelectedStatus,
+            Year = SelectedYear,
+            ProjectName = string.IsNullOrWhiteSpace(ProjectName) ? null : ProjectName.Trim()
+        };
     }
 }

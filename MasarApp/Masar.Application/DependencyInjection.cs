@@ -1,5 +1,6 @@
 using FluentValidation;
 using Masar.Application.Interfaces;
+using Masar.Application.Reporting;
 using Masar.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
@@ -29,6 +30,9 @@ public static class DependencyInjection
         services.AddScoped<IDocumentService, DocumentService>();
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<IAcademicTermService, AcademicTermService>();
+        
+        // QuestPDF Academic Report Builder (stateless — Transient)
+        services.AddTransient<IAcademicReportBuilder, AcademicReportBuilder>();
 
         return services;
     }

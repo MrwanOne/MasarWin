@@ -44,6 +44,11 @@
     <sys:String x:Key="Button.ToggleActive">Enable/Disable</sys:String>
     <sys:String x:Key="Button.ResetPassword">Reset Password</sys:String>
     <sys:String x:Key="Button.ImportExcel">📥 Import from Excel</sys:String>
+    <sys:String x:Key="Button.ExportPdf">📄 Export PDF</sys:String>
+
+    <sys:String x:Key="Dialog.SaveReport">Save Report</sys:String>
+    <sys:String x:Key="Message.ReportExported">Report exported successfully!</sys:String>
+    <sys:String x:Key="Message.NoProjects">No projects to export</sys:String>
 
     <sys:String x:Key="Title.College">College</sys:String>
     <sys:String x:Key="Title.Colleges">Colleges</sys:String>

@@ -1,5 +1,6 @@
 using Masar.Application;
 using Masar.Application.Interfaces;
+using Masar.Application.Reporting;
 using Masar.Application.Services;
 using Masar.Infrastructure;
 using Masar.Infrastructure.DbContext;
@@ -95,6 +96,9 @@ public partial class App : System.Windows.Application
     {
         try 
         {
+            // Initialize QuestPDF - must be called before any PDF generation
+            QuestPdfConfiguration.Initialize();
+            
             LoggingConfiguration.Configure();
             Serilog.Log.Information("Application starting...");
 

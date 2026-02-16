@@ -44,6 +44,11 @@
     <sys:String x:Key="Button.ToggleActive">تفعيل/تعطيل</sys:String>
     <sys:String x:Key="Button.ResetPassword">إعادة تعيين كلمة المرور</sys:String>
     <sys:String x:Key="Button.ImportExcel">📥 استيراد من Excel</sys:String>
+    <sys:String x:Key="Button.ExportPdf">📄 تصدير PDF</sys:String>
+
+    <sys:String x:Key="Dialog.SaveReport">حفظ التقرير</sys:String>
+    <sys:String x:Key="Message.ReportExported">تم تصدير التقرير بنجاح!</sys:String>
+    <sys:String x:Key="Message.NoProjects">لا توجد مشاريع للتصدير</sys:String>
 
     <sys:String x:Key="Title.College">كلية</sys:String>
     <sys:String x:Key="Title.Colleges">الكليات</sys:String>
