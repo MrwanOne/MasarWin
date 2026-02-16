@@ -103,7 +103,6 @@ namespace Masar.Infrastructure.Migrations
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AuditLogId"));
 
                     b.Property<string>("Action")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("NVARCHAR2(50)")
                         .HasColumnName("action");
@@ -113,24 +112,20 @@ namespace Masar.Infrastructure.Migrations
                         .HasColumnName("changed_at");
 
                     b.Property<string>("EntityId")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("NVARCHAR2(100)")
                         .HasColumnName("entity_id");
 
                     b.Property<string>("EntityName")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("NVARCHAR2(100)")
                         .HasColumnName("entity_name");
 
                     b.Property<string>("NewValues")
-                        .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
                         .HasColumnName("new_values");
 
                     b.Property<string>("OldValues")
-                        .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
                         .HasColumnName("old_values");
 
@@ -139,7 +134,6 @@ namespace Masar.Infrastructure.Migrations
                         .HasColumnName("user_id");
 
                     b.Property<string>("Username")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("NVARCHAR2(200)")
                         .HasColumnName("username");
@@ -159,7 +153,6 @@ namespace Masar.Infrastructure.Migrations
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CollegeId"));
 
                     b.Property<string>("Code")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("NVARCHAR2(50)")
                         .HasColumnName("code");
@@ -316,7 +309,6 @@ namespace Masar.Infrastructure.Migrations
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ScoreId"));
 
                     b.Property<string>("Comments")
-                        .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
                         .HasColumnName("comments");
 
@@ -353,7 +345,6 @@ namespace Masar.Infrastructure.Migrations
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DepartmentId"));
 
                     b.Property<string>("Code")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("NVARCHAR2(50)")
                         .HasColumnName("code");
@@ -461,7 +452,6 @@ namespace Masar.Infrastructure.Migrations
                         .HasColumnName("place");
 
                     b.Property<string>("ReportText")
-                        .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
                         .HasColumnName("report_text");
 
@@ -532,7 +522,6 @@ namespace Masar.Infrastructure.Migrations
                         .HasColumnName("full_name");
 
                     b.Property<string>("Gender")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("NVARCHAR2(20)")
                         .HasColumnName("gender");
@@ -552,13 +541,11 @@ namespace Masar.Infrastructure.Migrations
                         .HasColumnName("max_supervision_count");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("NVARCHAR2(50)")
                         .HasColumnName("phone");
 
                     b.Property<string>("Qualification")
-                        .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("NVARCHAR2(150)")
                         .HasColumnName("qualification");
@@ -568,7 +555,6 @@ namespace Masar.Infrastructure.Migrations
                         .HasColumnName("rank");
 
                     b.Property<string>("Specialization")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("NVARCHAR2(200)")
                         .HasColumnName("specialization");
@@ -600,7 +586,6 @@ namespace Masar.Infrastructure.Migrations
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DocumentId"));
 
                     b.Property<string>("Category")
-                        .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(100)
                         .HasColumnType("NVARCHAR2(100)")
@@ -618,7 +603,6 @@ namespace Masar.Infrastructure.Migrations
                         .HasColumnName("content");
 
                     b.Property<string>("ContentType")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("NVARCHAR2(100)")
                         .HasColumnName("content_type");
@@ -661,7 +645,6 @@ namespace Masar.Infrastructure.Migrations
                         .HasColumnName("project_id");
 
                     b.Property<string>("Status")
-                        .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
                         .HasColumnType("NVARCHAR2(50)")
@@ -719,12 +702,10 @@ namespace Masar.Infrastructure.Migrations
                         .HasColumnName("department_id");
 
                     b.Property<string>("DescriptionAr")
-                        .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
                         .HasColumnName("description_ar");
 
                     b.Property<string>("DescriptionEn")
-                        .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
                         .HasColumnName("description_en");
 
@@ -793,7 +774,6 @@ namespace Masar.Infrastructure.Migrations
                         .HasColumnName("approved_at");
 
                     b.Property<string>("Beneficiary")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("NVARCHAR2(200)")
                         .HasColumnName("beneficiary");
@@ -816,12 +796,10 @@ namespace Masar.Infrastructure.Migrations
                         .HasColumnName("department_id");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
                         .HasColumnName("description");
 
                     b.Property<string>("DocumentationPath")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("NVARCHAR2(500)")
                         .HasColumnName("documentation_path");
@@ -837,7 +815,6 @@ namespace Masar.Infrastructure.Migrations
                         .HasColumnName("proposed_at");
 
                     b.Property<string>("RejectionReason")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("NVARCHAR2(500)")
                         .HasColumnName("rejection_reason");
@@ -898,7 +875,6 @@ namespace Masar.Infrastructure.Migrations
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HistoryId"));
 
                     b.Property<string>("ChangeReason")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("NVARCHAR2(500)")
                         .HasColumnName("change_reason");
@@ -974,7 +950,6 @@ namespace Masar.Infrastructure.Migrations
                         .HasColumnName("gpa");
 
                     b.Property<string>("Gender")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("NVARCHAR2(20)")
                         .HasColumnName("gender");
@@ -990,7 +965,6 @@ namespace Masar.Infrastructure.Migrations
                         .HasColumnName("level");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("NVARCHAR2(50)")
                         .HasColumnName("phone");
@@ -1060,12 +1034,10 @@ namespace Masar.Infrastructure.Migrations
                         .HasColumnName("discussion_id");
 
                     b.Property<string>("GeneralFeedback")
-                        .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
                         .HasColumnName("general_feedback");
 
                     b.Property<string>("ImprovementAreas")
-                        .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
                         .HasColumnName("improvement_areas");
 
@@ -1076,7 +1048,6 @@ namespace Masar.Infrastructure.Migrations
                         .HasColumnName("is_deleted");
 
                     b.Property<string>("StrengthPoints")
-                        .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)")
                         .HasColumnName("strength_points");
 

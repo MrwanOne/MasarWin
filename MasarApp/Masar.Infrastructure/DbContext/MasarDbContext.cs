@@ -44,13 +44,13 @@ public class MasarDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.StudentId).HasColumnName("student_id");
             entity.Property(e => e.FileName).HasColumnName("file_name").HasMaxLength(255).IsRequired();
             entity.Property(e => e.Content).HasColumnName("content").IsRequired();
-            entity.Property(e => e.ContentType).HasColumnName("content_type").HasMaxLength(100);
+            entity.Property(e => e.ContentType).HasColumnName("content_type").HasMaxLength(100).IsRequired(false);
             entity.Property(e => e.FileSize).HasColumnName("file_size");
             entity.Property(e => e.Version).HasColumnName("version").HasDefaultValue(1);
-            entity.Property(e => e.Status).HasColumnName("status").HasMaxLength(50).HasDefaultValue("Draft");
-            entity.Property(e => e.Category).HasColumnName("category").HasMaxLength(100).HasDefaultValue("General");
-            entity.Property(e => e.Checksum).HasColumnName("checksum").HasMaxLength(64);
-            entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(500);
+            entity.Property(e => e.Status).HasColumnName("status").HasMaxLength(50).HasDefaultValue("Draft").IsRequired(false);
+            entity.Property(e => e.Category).HasColumnName("category").HasMaxLength(100).HasDefaultValue("General").IsRequired(false);
+            entity.Property(e => e.Checksum).HasColumnName("checksum").HasMaxLength(64).IsRequired(false);
+            entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(500).IsRequired(false);
 
             entity.HasOne(d => d.Project)
                 .WithMany(p => p.Documents)
@@ -90,13 +90,13 @@ public class MasarDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.ToTable("audit_log");
             entity.HasKey(e => e.AuditLogId);
             entity.Property(e => e.AuditLogId).HasColumnName("audit_log_id");
-            entity.Property(e => e.EntityName).HasColumnName("entity_name").HasMaxLength(100).IsRequired();
-            entity.Property(e => e.EntityId).HasColumnName("entity_id").HasMaxLength(100).IsRequired();
-            entity.Property(e => e.Action).HasColumnName("action").HasMaxLength(50).IsRequired();
-            entity.Property(e => e.OldValues).HasColumnName("old_values");
-            entity.Property(e => e.NewValues).HasColumnName("new_values");
+            entity.Property(e => e.EntityName).HasColumnName("entity_name").HasMaxLength(100).IsRequired(false);
+            entity.Property(e => e.EntityId).HasColumnName("entity_id").HasMaxLength(100).IsRequired(false);
+            entity.Property(e => e.Action).HasColumnName("action").HasMaxLength(50).IsRequired(false);
+            entity.Property(e => e.OldValues).HasColumnName("old_values").IsRequired(false);
+            entity.Property(e => e.NewValues).HasColumnName("new_values").IsRequired(false);
             entity.Property(e => e.UserId).HasColumnName("user_id");
-            entity.Property(e => e.Username).HasColumnName("username").HasMaxLength(200);
+            entity.Property(e => e.Username).HasColumnName("username").HasMaxLength(200).IsRequired(false);
             entity.Property(e => e.ChangedAt).HasColumnName("changed_at");
         });
 
@@ -108,7 +108,7 @@ public class MasarDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.CollegeId).HasColumnName("college_id");
             entity.Property(e => e.NameAr).HasColumnName("name_ar").HasMaxLength(200).IsRequired();
             entity.Property(e => e.NameEn).HasColumnName("name_en").HasMaxLength(200).IsRequired();
-            entity.Property(e => e.Code).HasColumnName("code").HasMaxLength(50);
+            entity.Property(e => e.Code).HasColumnName("code").HasMaxLength(50).IsRequired(false);
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
             entity.HasIndex(e => e.NameAr).IsUnique();
@@ -123,7 +123,7 @@ public class MasarDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.DepartmentId).HasColumnName("department_id");
             entity.Property(e => e.NameAr).HasColumnName("name_ar").HasMaxLength(200).IsRequired();
             entity.Property(e => e.NameEn).HasColumnName("name_en").HasMaxLength(200).IsRequired();
-            entity.Property(e => e.Code).HasColumnName("code").HasMaxLength(50);
+            entity.Property(e => e.Code).HasColumnName("code").HasMaxLength(50).IsRequired(false);
             entity.Property(e => e.CollegeId).HasColumnName("college_id");
             entity.Property(e => e.HeadOfDepartmentId).HasColumnName("head_of_department_id");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
@@ -149,12 +149,12 @@ public class MasarDbContext : Microsoft.EntityFrameworkCore.DbContext
             ConfigureBaseEntity(entity);
             entity.Property(e => e.DoctorId).HasColumnName("doctor_id");
             entity.Property(e => e.FullName).HasColumnName("full_name").HasMaxLength(200).IsRequired();
-            entity.Property(e => e.Qualification).HasColumnName("qualification").HasMaxLength(150).IsRequired();
-            entity.Property(e => e.Gender).HasColumnName("gender").HasMaxLength(20).IsRequired();
-            entity.Property(e => e.Email).HasColumnName("email").HasMaxLength(200);
-            entity.Property(e => e.Phone).HasColumnName("phone").HasMaxLength(50);
+            entity.Property(e => e.Qualification).HasColumnName("qualification").HasMaxLength(150).IsRequired(false);
+            entity.Property(e => e.Gender).HasColumnName("gender").HasMaxLength(20).IsRequired(false);
+            entity.Property(e => e.Email).HasColumnName("email").HasMaxLength(200).IsRequired(false);
+            entity.Property(e => e.Phone).HasColumnName("phone").HasMaxLength(50).IsRequired(false);
             entity.Property(e => e.Rank).HasColumnName("rank");
-            entity.Property(e => e.Specialization).HasColumnName("specialization").HasMaxLength(200);
+            entity.Property(e => e.Specialization).HasColumnName("specialization").HasMaxLength(200).IsRequired(false);
             entity.Property(e => e.MaxSupervisionCount).HasColumnName("max_supervision_count");
             entity.Property(e => e.IsActive).HasColumnName("is_active");
             entity.Property(e => e.DepartmentId).HasColumnName("department_id");
@@ -182,9 +182,9 @@ public class MasarDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.StudentId).HasColumnName("student_id");
             entity.Property(e => e.StudentNumber).HasColumnName("student_number").HasMaxLength(50).IsRequired();
             entity.Property(e => e.FullName).HasColumnName("full_name").HasMaxLength(200).IsRequired();
-            entity.Property(e => e.Gender).HasColumnName("gender").HasMaxLength(20);
-            entity.Property(e => e.Email).HasColumnName("email").HasMaxLength(200);
-            entity.Property(e => e.Phone).HasColumnName("phone").HasMaxLength(50);
+            entity.Property(e => e.Gender).HasColumnName("gender").HasMaxLength(20).IsRequired(false);
+            entity.Property(e => e.Email).HasColumnName("email").HasMaxLength(200).IsRequired(false);
+            entity.Property(e => e.Phone).HasColumnName("phone").HasMaxLength(50).IsRequired(false);
             entity.Property(e => e.GPA).HasColumnName("gpa").HasPrecision(3, 2);
             entity.Property(e => e.Level).HasColumnName("level");
             entity.Property(e => e.Status).HasColumnName("status");
@@ -241,14 +241,14 @@ public class MasarDbContext : Microsoft.EntityFrameworkCore.DbContext
             ConfigureBaseEntity(entity);
             entity.Property(e => e.ProjectId).HasColumnName("project_id");
             entity.Property(e => e.Title).HasColumnName("title").HasMaxLength(300).IsRequired();
-            entity.Property(e => e.Description).HasColumnName("description");
-            entity.Property(e => e.Beneficiary).HasColumnName("beneficiary").HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Description).HasColumnName("description").IsRequired(false);
+            entity.Property(e => e.Beneficiary).HasColumnName("beneficiary").HasMaxLength(200).IsRequired(false);
             entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.CompletionRate).HasColumnName("completion_rate").HasPrecision(5, 2);
-            entity.Property(e => e.DocumentationPath).HasColumnName("documentation_path").HasMaxLength(500);
+            entity.Property(e => e.DocumentationPath).HasColumnName("documentation_path").HasMaxLength(500).IsRequired(false);
             entity.Property(e => e.ProposedAt).HasColumnName("proposed_at");
             entity.Property(e => e.ApprovedAt).HasColumnName("approved_at");
-            entity.Property(e => e.RejectionReason).HasColumnName("rejection_reason").HasMaxLength(500);
+            entity.Property(e => e.RejectionReason).HasColumnName("rejection_reason").HasMaxLength(500).IsRequired(false);
             entity.Property(e => e.DepartmentId).HasColumnName("department_id");
             entity.Property(e => e.TeamId).HasColumnName("team_id");
             entity.Property(e => e.SupervisorId).HasColumnName("supervisor_id");
@@ -334,7 +334,7 @@ public class MasarDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.SupervisorScore).HasColumnName("supervisor_score").HasPrecision(5, 2);
             entity.Property(e => e.CommitteeScore).HasColumnName("committee_score").HasPrecision(5, 2);
             entity.Property(e => e.FinalScore).HasColumnName("final_score").HasPrecision(5, 2);
-            entity.Property(e => e.ReportText).HasColumnName("report_text");
+            entity.Property(e => e.ReportText).HasColumnName("report_text").IsRequired(false);
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
             entity.HasOne(d => d.Team)
@@ -402,8 +402,8 @@ public class MasarDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.CriteriaId).HasColumnName("criteria_id");
             entity.Property(e => e.NameAr).HasColumnName("name_ar").HasMaxLength(200).IsRequired();
             entity.Property(e => e.NameEn).HasColumnName("name_en").HasMaxLength(200).IsRequired();
-            entity.Property(e => e.DescriptionAr).HasColumnName("description_ar");
-            entity.Property(e => e.DescriptionEn).HasColumnName("description_en");
+            entity.Property(e => e.DescriptionAr).HasColumnName("description_ar").IsRequired(false);
+            entity.Property(e => e.DescriptionEn).HasColumnName("description_en").IsRequired(false);
             entity.Property(e => e.MaxScore).HasColumnName("max_score").HasPrecision(5, 2);
             entity.Property(e => e.Weight).HasColumnName("weight").HasPrecision(5, 4);
             entity.Property(e => e.DisplayOrder).HasColumnName("display_order");
@@ -426,9 +426,9 @@ public class MasarDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.StudentId).HasColumnName("student_id");
             entity.Property(e => e.TotalScore).HasColumnName("total_score").HasPrecision(5, 2);
             entity.Property(e => e.ContributionPercentage).HasColumnName("contribution_percentage").HasPrecision(5, 2);
-            entity.Property(e => e.GeneralFeedback).HasColumnName("general_feedback");
-            entity.Property(e => e.StrengthPoints).HasColumnName("strength_points");
-            entity.Property(e => e.ImprovementAreas).HasColumnName("improvement_areas");
+            entity.Property(e => e.GeneralFeedback).HasColumnName("general_feedback").IsRequired(false);
+            entity.Property(e => e.StrengthPoints).HasColumnName("strength_points").IsRequired(false);
+            entity.Property(e => e.ImprovementAreas).HasColumnName("improvement_areas").IsRequired(false);
 
             entity.HasIndex(e => new { e.DiscussionId, e.StudentId }).IsUnique();
 
@@ -451,7 +451,7 @@ public class MasarDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.EvaluationId).HasColumnName("evaluation_id");
             entity.Property(e => e.CriteriaId).HasColumnName("criteria_id");
             entity.Property(e => e.Score).HasColumnName("score").HasPrecision(5, 2);
-            entity.Property(e => e.Comments).HasColumnName("comments");
+            entity.Property(e => e.Comments).HasColumnName("comments").IsRequired(false);
 
             entity.HasIndex(e => new { e.EvaluationId, e.CriteriaId }).IsUnique();
 
@@ -475,7 +475,7 @@ public class MasarDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.OldStatus).HasColumnName("old_status");
             entity.Property(e => e.NewStatus).HasColumnName("new_status");
             entity.Property(e => e.ChangedByUserId).HasColumnName("changed_by_user_id");
-            entity.Property(e => e.ChangeReason).HasColumnName("change_reason").HasMaxLength(500);
+            entity.Property(e => e.ChangeReason).HasColumnName("change_reason").HasMaxLength(500).IsRequired(false);
             entity.Property(e => e.ChangedAt).HasColumnName("changed_at");
 
             entity.HasOne(d => d.Project)
