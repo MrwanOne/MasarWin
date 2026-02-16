@@ -93,8 +93,8 @@ public static class MappingExtensions
             CommitteeName = entity.Committee?.Name ?? string.Empty,
             StudentCount = entity.Students.Count,
             ProjectTitle = entity.Projects.FirstOrDefault()?.Title ?? string.Empty,
-            StudentNames = string.Join(", ", entity.Students.Select(s => s.FullName)),
-            StudentNumbers = string.Join(", ", entity.Students.Select(s => s.StudentNumber)),
+            StudentNames = string.Join("\n", entity.Students.Select(s => s.FullName)),
+            StudentNumbers = string.Join("\n", entity.Students.Select(s => s.StudentNumber)),
             AcademicYear = GetAcademicYear(entity)
         };
     }

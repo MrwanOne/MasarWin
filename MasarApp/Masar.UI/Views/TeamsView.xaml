@@ -35,8 +35,20 @@
         <DataGrid Grid.Row="1" ItemsSource="{Binding PagedItems}" SelectedItem="{Binding SelectedTeam}" Margin="0,12,0,12" IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="{DynamicResource Grid.Project}" Binding="{Binding ProjectTitle}" Width="*" />
-                <DataGridTextColumn Header="{DynamicResource Grid.Students}" Binding="{Binding StudentNames}" Width="2*" />
-                <DataGridTextColumn Header="{DynamicResource Grid.StudentNumber}" Binding="{Binding StudentNumbers}" Width="*" />
+                <DataGridTemplateColumn Header="{DynamicResource Grid.Students}" Width="2*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding StudentNames}" TextWrapping="Wrap" Padding="4,6" VerticalAlignment="Center" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="{DynamicResource Grid.StudentNumber}" Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding StudentNumbers}" TextWrapping="Wrap" Padding="4,6" VerticalAlignment="Center" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="{DynamicResource Grid.Department}" Binding="{Binding DepartmentName}" Width="*" />
                 <DataGridTextColumn Header="{DynamicResource Grid.Year}" Binding="{Binding AcademicYear}" Width="*" />
                 <DataGridTextColumn Header="{DynamicResource Grid.Supervisor}" Binding="{Binding SupervisorName}" Width="*" />
