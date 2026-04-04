@@ -1,39 +1,24 @@
-﻿using Masar.Application.DTOs;
+using Masar.Application.DTOs;
 using Masar.Application.Interfaces;
-using Masar.Domain.Enums;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Masar.Application.Services;
 
+/// <summary>
+/// يستخدم VW_DASHBOARD_STATS لجلب الإحصائيات مباشرةً من قاعدة البيانات
+/// بدلاً من جلب كل السجلات وعدّها في memory
+/// </summary>
 public class DashboardService : IDashboardService
 {
-    private readonly IProjectRepository _projects;
-    private readonly IStudentRepository _students;
-    private readonly ICommitteeRepository _committees;
+    private readonly IViewRepository _viewRepository;
 
-    public DashboardService(IProjectRepository projects, IStudentRepository students, ICommitteeRepository committees)
+    public DashboardService(IViewRepository viewRepository)
     {
-        _projects = projects;
-        _students = students;
-        _committees = committees;
+        _viewRepository = viewRepository;
     }
 
-    public async Task<DashboardStatsDto> GetStatsAsync(CancellationToken cancellationToken = default)
-    {
-        var projects = await _projects.GetAllAsync(cancellationToken);
-        var students = await _students.GetAllAsync(cancellationToken);
-        var committees = await _committees.GetAllAsync(cancellationToken);
-
-        return new DashboardStatsDto
-        {
-            TotalProjects = projects.Count,
-            ProposedProjects = projects.Count(p => p.Status == ProjectStatus.Proposed),
-            ApprovedProjects = projects.Count(p => p.Status == ProjectStatus.Approved),
-            CompletedProjects = projects.Count(p => p.Status == ProjectStatus.Completed),
-            TotalStudents = students.Count,
-            TotalCommittees = committees.Count
-        };
-    }
+    public Task<DashboardStatsDto> GetStatsAsync(CancellationToken cancellationToken = default)
+        => _viewRepository.GetDashboardStatsAsync(cancellationToken);
 }
+

@@ -45,6 +45,20 @@ public class DashboardViewModel : ViewModelBase
         set => SetProperty(ref _completedProjects, value);
     }
 
+    private int _inProgressProjects;
+    public int InProgressProjects
+    {
+        get => _inProgressProjects;
+        set => SetProperty(ref _inProgressProjects, value);
+    }
+
+    private int _rejectedProjects;
+    public int RejectedProjects
+    {
+        get => _rejectedProjects;
+        set => SetProperty(ref _rejectedProjects, value);
+    }
+
     private int _totalStudents;
     public int TotalStudents
     {
@@ -52,11 +66,25 @@ public class DashboardViewModel : ViewModelBase
         set => SetProperty(ref _totalStudents, value);
     }
 
+    private int _totalTeams;
+    public int TotalTeams
+    {
+        get => _totalTeams;
+        set => SetProperty(ref _totalTeams, value);
+    }
+
     private int _totalCommittees;
     public int TotalCommittees
     {
         get => _totalCommittees;
         set => SetProperty(ref _totalCommittees, value);
+    }
+
+    private int _totalDoctors;
+    public int TotalDoctors
+    {
+        get => _totalDoctors;
+        set => SetProperty(ref _totalDoctors, value);
     }
 
     private string _activeTermName = string.Empty;
@@ -105,12 +133,16 @@ public class DashboardViewModel : ViewModelBase
         try
         {
             var stats = await _dashboardService.GetStatsAsync();
-            TotalProjects = stats.TotalProjects;
-            ProposedProjects = stats.ProposedProjects;
-            ApprovedProjects = stats.ApprovedProjects;
+            TotalProjects     = stats.TotalProjects;
+            ProposedProjects  = stats.ProposedProjects;
+            ApprovedProjects  = stats.ApprovedProjects;
+            InProgressProjects = stats.InProgressProjects;
             CompletedProjects = stats.CompletedProjects;
-            TotalStudents = stats.TotalStudents;
-            TotalCommittees = stats.TotalCommittees;
+            RejectedProjects  = stats.RejectedProjects;
+            TotalStudents     = stats.TotalStudents;
+            TotalTeams        = stats.TotalTeams;
+            TotalCommittees   = stats.TotalCommittees;
+            TotalDoctors      = stats.TotalDoctors;
 
             var activeTerm = await _termService.GetActiveTermAsync();
             if (activeTerm != null)

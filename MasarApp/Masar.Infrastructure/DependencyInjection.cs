@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddTransient<IProjectStatusHistoryRepository, ProjectStatusHistoryRepository>();
         services.AddTransient<IAuditLogRepository, AuditLogRepository>();
         services.AddTransient<IDocumentRepository, DocumentRepository>();
+        services.AddTransient<IViewRepository, ViewRepository>();
 
         return services;
     }

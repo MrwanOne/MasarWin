@@ -117,6 +117,10 @@ public partial class App : System.Windows.Application
                 {
                     await dbContext.Database.MigrateAsync();
                 }
+
+                // إنشاء/تحديث Oracle Views مرة واحدة عند Startup
+                await DatabaseViewsInitializer.InitializeAsync(dbFactory);
+
                 var passwordHasher = services.GetRequiredService<IPasswordHasher>();
 
                 await DbSeeder.SeedAdminAsync(dbFactory, passwordHasher);
