@@ -18,7 +18,7 @@ public static class DatabaseViewsInitializer
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        Serilog.Log.Information("DatabaseViewsInitializer: Creating/updating Oracle Views...");
+        Console.WriteLine("DatabaseViewsInitializer: Creating/updating Oracle Views...");
 
         await CreateView(context, "VW_PROJECT_FULL_DETAIL", @"
             SELECT p.project_id,
@@ -158,7 +158,7 @@ public static class DatabaseViewsInitializer
                 (SELECT COUNT(*) FROM doctor   d WHERE d.is_deleted = 0)                              AS total_doctors
             FROM DUAL", cancellationToken);
 
-        Serilog.Log.Information("DatabaseViewsInitializer: All 6 Views created/updated successfully.");
+        Console.WriteLine("DatabaseViewsInitializer: All 6 Views created/updated successfully.");
     }
 
     private static async Task CreateView(
@@ -171,11 +171,11 @@ public static class DatabaseViewsInitializer
         {
             var sql = $"CREATE OR REPLACE VIEW {viewName} AS {selectSql}";
             await context.Database.ExecuteSqlRawAsync(sql, cancellationToken);
-            Serilog.Log.Debug("DatabaseViewsInitializer: View '{ViewName}' created/updated.", viewName);
+            Console.WriteLine($"DatabaseViewsInitializer: View '{viewName}' created/updated.");
         }
         catch (Exception ex)
         {
-            Serilog.Log.Error(ex, "DatabaseViewsInitializer: Failed to create View '{ViewName}'.", viewName);
+            Console.Error.WriteLine($"DatabaseViewsInitializer: Failed to create View '{viewName}'. Exception: {ex.Message}");
             throw;
         }
     }
