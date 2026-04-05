@@ -15,11 +15,16 @@ public class DiscussionService : IDiscussionService
 {
     private readonly IDiscussionRepository _discussions;
     private readonly ICurrentUserService _currentUser;
+    private readonly IProjectProcedureRepository _procedures;
 
-    public DiscussionService(IDiscussionRepository discussions, ICurrentUserService currentUser)
+    public DiscussionService(
+        IDiscussionRepository discussions,
+        ICurrentUserService currentUser,
+        IProjectProcedureRepository procedures)
     {
         _discussions = discussions;
         _currentUser = currentUser;
+        _procedures  = procedures;
     }
 
     public async Task<List<DiscussionDto>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -108,26 +113,28 @@ public class DiscussionService : IDiscussionService
         return Result.Success();
     }
 
-    public async Task<Result<DiscussionDto>> SaveEvaluationAsync(int discussionId, decimal supervisorScore, decimal committeeScore, string reportText, CancellationToken cancellationToken = default)
+    public async Task<Result<DiscussionDto>> SaveEvaluationAsync(
+        int discussionId,
+        decimal supervisorScore,
+        decimal committeeScore,
+        string reportText,
+        CancellationToken cancellationToken = default)
     {
         var authCheck = EnsureAuthorized(UserRole.Admin, UserRole.HeadOfDepartment, UserRole.Supervisor);
         if (authCheck.IsFailure) return Result<DiscussionDto>.Failure(authCheck.Message);
 
-        if (supervisorScore < 0 || supervisorScore > 100)
-            return Result<DiscussionDto>.Failure("درجة المشرف يجب أن تكون بين 0 و 100");
-        if (committeeScore < 0 || committeeScore > 100)
-            return Result<DiscussionDto>.Failure("درجة اللجنة يجب أن تكون بين 0 و 100");
+        // تفويض كامل إلى SP_SAVE_EVALUATION:
+        // حساب الدرجة النهائية + تحديث المناقشة + إنهاء المشروع تلقائياً — كله في Transaction واحدة
+        var (code, msg) = await _procedures.SaveEvaluationAsync(
+            discussionId, supervisorScore, committeeScore, reportText, cancellationToken);
 
-        var entity = await _discussions.GetByIdAsync(discussionId, cancellationToken);
-        if (entity == null) return Result<DiscussionDto>.Failure("Discussion not found.");
+        if (code != 0)
+            return Result<DiscussionDto>.Failure(msg);
 
-        entity.SupervisorScore = supervisorScore;
-        entity.CommitteeScore = committeeScore;
-        entity.FinalScore = Math.Round((supervisorScore + committeeScore) / 2m, 2);
-        entity.ReportText = reportText?.Trim() ?? string.Empty;
-
-        await _discussions.UpdateAsync(entity, cancellationToken);
-        return Result<DiscussionDto>.Success(entity.ToDto());
+        var updated = await _discussions.GetByIdAsync(discussionId, cancellationToken);
+        return updated is not null
+            ? Result<DiscussionDto>.Success(updated.ToDto())
+            : Result<DiscussionDto>.Failure("Discussion not found after save.");
     }
 
     private Result EnsureAuthorized(params UserRole[] allowedRoles)

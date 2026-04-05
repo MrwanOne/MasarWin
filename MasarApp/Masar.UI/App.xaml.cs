@@ -121,6 +121,9 @@ public partial class App : System.Windows.Application
                 // إنشاء/تحديث Oracle Views مرة واحدة عند Startup
                 await DatabaseViewsInitializer.InitializeAsync(dbFactory);
 
+                // إنشاء/تحديث Oracle Functions وProcedures وTriggers عند Startup
+                await DatabaseProceduresInitializer.InitializeAsync(dbFactory);
+
                 var passwordHasher = services.GetRequiredService<IPasswordHasher>();
 
                 await DbSeeder.SeedAdminAsync(dbFactory, passwordHasher);

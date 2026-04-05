@@ -210,7 +210,7 @@ BEGIN
         ""report_text""      = p_report_text
     WHERE ""discussion_id"" = p_discussion_id;
 
-    -- تحديث المشروع المرتبط بالفريق إلى حالة "منتهي" (3)
+    -- تحديث المشروع المرتبط بالفريق 3 إلى حالة منتهي
     UPDATE ""project""
     SET ""status""          = 3,
         ""completion_rate"" = 100
