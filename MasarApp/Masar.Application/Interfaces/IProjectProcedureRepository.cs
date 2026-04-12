@@ -12,7 +12,6 @@ public interface IProjectProcedureRepository
     /// <summary>
     /// تستدعي SP_ACCEPT_PROJECT:
     /// تقبل مشروعاً، تعين مشرفاً، وتسجل السجل في ProjectStatusHistory.
-    /// تستبدل 4 استعلامات منفصلة كانت في ProjectService.AcceptAsync.
     /// </summary>
     /// <param name="projectId">معرف المشروع المراد قبوله</param>
     /// <param name="supervisorId">معرف المشرف المراد تعيينه (0 إذا لم يُحدد)</param>
