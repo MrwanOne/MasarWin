@@ -85,4 +85,3 @@ User Id=NEW_SCHEMA;Password=NEW_PASSWORD;Data Source=127.0.0.1:1521/FREEPDB1
 
 - بعد تعديل بيانات الاتصال، أعد تشغيل التطبيق.
 - عند استخدام أوامر `dotnet ef` يجب أن تكون بيانات الاتصال في `DesignTimeDbContextFactory` صحيحة.
-- يفضل عدم رفع كلمات المرور الحقيقية إلى Git؛ استخدم قيما محلية أو أسرارا بيئية حسب بيئة العمل.
