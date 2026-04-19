@@ -54,6 +54,43 @@ BEGIN
     RETURN CASE WHEN v_count > 0 THEN 1 ELSE 0 END;
 END FN_SUPERVISOR_IS_COMMITTEE_MEMBER";
 
+    /// <summary>
+    /// تُرجع عدد الطلاب النشطين (غير المحذوفين) في قسم معين.
+    /// تُستخدم في واجهة إدارة الأقسام لعرض الإحصائيات.
+    /// </summary>
+    public const string FN_GET_STUDENT_COUNT_BY_DEPT = @"
+CREATE OR REPLACE FUNCTION FN_GET_STUDENT_COUNT_BY_DEPT(
+    p_department_id IN NUMBER
+) RETURN NUMBER AS
+    v_count NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO v_count
+    FROM ""student""
+    WHERE ""department_id"" = p_department_id
+      AND ""is_deleted""    = 0;
+    RETURN v_count;
+END FN_GET_STUDENT_COUNT_BY_DEPT";
+
+    /// <summary>
+    /// تتحقق إن كان الطالب منتسباً لفريق نشط.
+    /// تُرجع 1 إذا كان لديه فريق، 0 إذا لم يكن.
+    /// تُستخدم في SP_ASSIGN_STUDENT_TO_TEAM لمنع التكرار.
+    /// </summary>
+    public const string FN_STUDENT_HAS_TEAM = @"
+CREATE OR REPLACE FUNCTION FN_STUDENT_HAS_TEAM(
+    p_student_id IN NUMBER
+) RETURN NUMBER AS
+    v_team_id NUMBER;
+BEGIN
+    SELECT ""team_id"" INTO v_team_id
+    FROM ""student""
+    WHERE ""student_id"" = p_student_id
+      AND ""is_deleted"" = 0;
+    RETURN CASE WHEN v_team_id IS NOT NULL THEN 1 ELSE 0 END;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN RETURN 0;
+END FN_STUDENT_HAS_TEAM";
+
     // ═══════════════════════════════════════════════════════════════
     // STORED PROCEDURES
     // ═══════════════════════════════════════════════════════════════
@@ -221,6 +258,203 @@ EXCEPTION
         p_result_msg  := 'خطأ غير متوقع: ' || SQLERRM;
 END SP_SAVE_EVALUATION";
 
+    /// <summary>
+    /// تضيف طالباً جديداً بعد التحقق من:
+    ///  - وجود القسم.
+    ///  - تفرّد رقم الطالب.
+    ///  - تفرّد البريد الإلكتروني (اختياري).
+    /// p_result_code: 0=نجاح، 1=خطأ.
+    /// p_new_student_id: معرف الطالب المُنشأ (عند النجاح).
+    /// </summary>
+    public const string SP_ADD_STUDENT = @"
+CREATE OR REPLACE PROCEDURE SP_ADD_STUDENT(
+    p_student_number  IN  ""student"".""student_number""%TYPE,
+    p_full_name       IN  ""student"".""full_name""%TYPE,
+    p_gender          IN  ""student"".""gender""%TYPE,
+    p_email           IN  ""student"".""email""%TYPE,
+    p_phone           IN  ""student"".""phone""%TYPE,
+    p_gpa             IN  ""student"".""gpa""%TYPE,
+    p_level           IN  ""student"".""level""%TYPE,
+    p_status          IN  ""student"".""status""%TYPE,
+    p_department_id   IN  ""student"".""department_id""%TYPE,
+    p_enrollment_year IN  ""student"".""enrollment_year""%TYPE,
+    p_created_by      IN  NUMBER,
+    p_result_code     OUT NUMBER,
+    p_result_msg      OUT VARCHAR2,
+    p_new_student_id  OUT NUMBER
+) AS
+    v_dept_count  NUMBER;
+    v_num_count   NUMBER;
+    v_email_count NUMBER;
+BEGIN
+    -- التحقق من وجود القسم
+    SELECT COUNT(*) INTO v_dept_count
+    FROM ""department""
+    WHERE ""department_id"" = p_department_id AND ""is_deleted"" = 0;
+
+    IF v_dept_count = 0 THEN
+        p_result_code    := 1;
+        p_result_msg     := 'القسم المحدد غير موجود';
+        p_new_student_id := NULL;
+        RETURN;
+    END IF;
+
+    -- التحقق من تفرّد رقم الطالب
+    SELECT COUNT(*) INTO v_num_count
+    FROM ""student""
+    WHERE ""student_number"" = p_student_number AND ""is_deleted"" = 0;
+
+    IF v_num_count > 0 THEN
+        p_result_code    := 1;
+        p_result_msg     := 'رقم الطالب ' || p_student_number || ' مستخدم مسبقاً';
+        p_new_student_id := NULL;
+        RETURN;
+    END IF;
+
+    -- التحقق من تفرّد البريد الإلكتروني (اختياري)
+    IF p_email IS NOT NULL THEN
+        SELECT COUNT(*) INTO v_email_count
+        FROM ""student""
+        WHERE ""email"" = p_email AND ""is_deleted"" = 0;
+
+        IF v_email_count > 0 THEN
+            p_result_code    := 1;
+            p_result_msg     := 'البريد الإلكتروني ' || p_email || ' مستخدم مسبقاً';
+            p_new_student_id := NULL;
+            RETURN;
+        END IF;
+    END IF;
+
+    -- إدراج الطالب
+    INSERT INTO ""student"" (
+        ""student_number"", ""full_name"", ""gender"", ""email"", ""phone"",
+        ""gpa"", ""level"", ""status"", ""department_id"", ""enrollment_year"",
+        ""created_at"", ""created_by_user_id"", ""is_deleted""
+    ) VALUES (
+        p_student_number, p_full_name, p_gender, p_email, p_phone,
+        p_gpa, p_level, p_status, p_department_id, p_enrollment_year,
+        SYSTIMESTAMP, p_created_by, 0
+    ) RETURNING ""student_id"" INTO p_new_student_id;
+
+    COMMIT;
+    p_result_code := 0;
+    p_result_msg  := 'تم إضافة الطالب بنجاح برقم: ' || p_new_student_id;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        p_result_code    := 1;
+        p_result_msg     := 'خطأ غير متوقع: ' || SQLERRM;
+        p_new_student_id := NULL;
+END SP_ADD_STUDENT";
+
+    /// <summary>
+    /// تعدّل بيانات طالب موجود بعد التحقق من:
+    ///  - وجود الطالب.
+    ///  - وجود القسم الجديد (إذا تغيّر).
+    ///  - تفرّد رقم الطالب الجديد (إذا تغيّر).
+    ///  - تفرّد البريد الإلكتروني الجديد (إذا تغيّر).
+    /// p_result_code: 0=نجاح، 1=خطأ.
+    /// </summary>
+    public const string SP_UPDATE_STUDENT = @"
+CREATE OR REPLACE PROCEDURE SP_UPDATE_STUDENT(
+    p_student_id      IN  ""student"".""student_id""%TYPE,
+    p_student_number  IN  ""student"".""student_number""%TYPE,
+    p_full_name       IN  ""student"".""full_name""%TYPE,
+    p_gender          IN  ""student"".""gender""%TYPE,
+    p_email           IN  ""student"".""email""%TYPE,
+    p_phone           IN  ""student"".""phone""%TYPE,
+    p_gpa             IN  ""student"".""gpa""%TYPE,
+    p_level           IN  ""student"".""level""%TYPE,
+    p_status          IN  ""student"".""status""%TYPE,
+    p_department_id   IN  ""student"".""department_id""%TYPE,
+    p_enrollment_year IN  ""student"".""enrollment_year""%TYPE,
+    p_updated_by      IN  NUMBER,
+    p_result_code     OUT NUMBER,
+    p_result_msg      OUT VARCHAR2
+) AS
+    v_student_count NUMBER;
+    v_dept_count    NUMBER;
+    v_num_count     NUMBER;
+    v_email_count   NUMBER;
+BEGIN
+    -- التحقق من وجود الطالب
+    SELECT COUNT(*) INTO v_student_count
+    FROM ""student""
+    WHERE ""student_id"" = p_student_id AND ""is_deleted"" = 0;
+
+    IF v_student_count = 0 THEN
+        p_result_code := 1;
+        p_result_msg  := 'الطالب غير موجود';
+        RETURN;
+    END IF;
+
+    -- التحقق من وجود القسم
+    SELECT COUNT(*) INTO v_dept_count
+    FROM ""department""
+    WHERE ""department_id"" = p_department_id AND ""is_deleted"" = 0;
+
+    IF v_dept_count = 0 THEN
+        p_result_code := 1;
+        p_result_msg  := 'القسم المحدد غير موجود';
+        RETURN;
+    END IF;
+
+    -- التحقق من تفرّد رقم الطالب (باستثناء نفس الطالب)
+    SELECT COUNT(*) INTO v_num_count
+    FROM ""student""
+    WHERE ""student_number"" = p_student_number
+      AND ""student_id""     != p_student_id
+      AND ""is_deleted""     = 0;
+
+    IF v_num_count > 0 THEN
+        p_result_code := 1;
+        p_result_msg  := 'رقم الطالب ' || p_student_number || ' مستخدم من طالب آخر';
+        RETURN;
+    END IF;
+
+    -- التحقق من تفرّد البريد الإلكتروني (باستثناء نفس الطالب)
+    IF p_email IS NOT NULL THEN
+        SELECT COUNT(*) INTO v_email_count
+        FROM ""student""
+        WHERE ""email""      = p_email
+          AND ""student_id"" != p_student_id
+          AND ""is_deleted"" = 0;
+
+        IF v_email_count > 0 THEN
+            p_result_code := 1;
+            p_result_msg  := 'البريد الإلكتروني ' || p_email || ' مستخدم من طالب آخر';
+            RETURN;
+        END IF;
+    END IF;
+
+    -- تحديث بيانات الطالب
+    UPDATE ""student"" SET
+        ""student_number""  = p_student_number,
+        ""full_name""        = p_full_name,
+        ""gender""           = p_gender,
+        ""email""            = p_email,
+        ""phone""            = p_phone,
+        ""gpa""              = p_gpa,
+        ""level""            = p_level,
+        ""status""           = p_status,
+        ""department_id""    = p_department_id,
+        ""enrollment_year""  = p_enrollment_year,
+        ""updated_at""       = SYSTIMESTAMP,
+        ""updated_by_user_id"" = p_updated_by
+    WHERE ""student_id"" = p_student_id;
+
+    COMMIT;
+    p_result_code := 0;
+    p_result_msg  := 'تم تعديل بيانات الطالب بنجاح';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        p_result_code := 1;
+        p_result_msg  := 'خطأ غير متوقع: ' || SQLERRM;
+END SP_UPDATE_STUDENT";
+
     // ═══════════════════════════════════════════════════════════════
     // TRIGGERS
     // ═══════════════════════════════════════════════════════════════
@@ -261,4 +495,157 @@ FOR EACH ROW
 BEGIN
     :NEW.""final_score"" := FN_CALC_FINAL_SCORE(:NEW.""supervisor_score"", :NEW.""committee_score"");
 END TRG_CALC_FINAL_SCORE";
+
+    // ═══════════════════════════════════════════════════════════════
+    // STUDENT PROCEDURES (إدارة الطلاب)
+    // ═══════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// تحذف طالباً حذفاً منطقياً (Soft Delete) بعد التحقق من:
+    ///  - وجود الطالب.
+    ///  - عدم ارتباطه بفريق نشط (لمنع حذف طالب في منتصف مشروع).
+    /// p_result_code: 0=نجاح، 1=خطأ.
+    /// </summary>
+    public const string SP_DELETE_STUDENT = @"
+CREATE OR REPLACE PROCEDURE SP_DELETE_STUDENT(
+    p_student_id  IN  ""student"".""student_id""%TYPE,
+    p_deleted_by  IN  NUMBER,
+    p_result_code OUT NUMBER,
+    p_result_msg  OUT VARCHAR2
+) AS
+    v_student_count NUMBER;
+    v_has_team      NUMBER;
+BEGIN
+    -- التحقق من وجود الطالب
+    SELECT COUNT(*) INTO v_student_count
+    FROM ""student""
+    WHERE ""student_id"" = p_student_id AND ""is_deleted"" = 0;
+
+    IF v_student_count = 0 THEN
+        p_result_code := 1;
+        p_result_msg  := 'الطالب غير موجود أو محذوف مسبقاً';
+        RETURN;
+    END IF;
+
+    -- التحقق: هل الطالب في فريق نشط؟
+    v_has_team := FN_STUDENT_HAS_TEAM(p_student_id);
+
+    IF v_has_team = 1 THEN
+        p_result_code := 1;
+        p_result_msg  := 'لا يمكن حذف الطالب لأنه منتسب لفريق نشط. يرجى إزالته من الفريق أولاً';
+        RETURN;
+    END IF;
+
+    -- حذف منطقي
+    UPDATE ""student""
+    SET ""is_deleted""        = 1,
+        ""updated_at""        = SYSTIMESTAMP,
+        ""updated_by_user_id"" = p_deleted_by
+    WHERE ""student_id"" = p_student_id;
+
+    COMMIT;
+    p_result_code := 0;
+    p_result_msg  := 'تم حذف الطالب بنجاح';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        p_result_code := 1;
+        p_result_msg  := 'خطأ غير متوقع: ' || SQLERRM;
+END SP_DELETE_STUDENT";
+
+    /// <summary>
+    /// تُضيف طالباً إلى فريق بعد التحقق من:
+    ///  - وجود الطالب والفريق.
+    ///  - أنهما في نفس القسم.
+    ///  - عدم انتساب الطالب لفريق آخر مسبقاً.
+    /// يدعم أيضاً إلغاء انتساب الطالب من الفريق (p_team_id = NULL).
+    /// p_result_code: 0=نجاح، 1=خطأ.
+    /// </summary>
+    public const string SP_ASSIGN_STUDENT_TO_TEAM = @"
+CREATE OR REPLACE PROCEDURE SP_ASSIGN_STUDENT_TO_TEAM(
+    p_student_id  IN  ""student"".""student_id""%TYPE,
+    p_team_id     IN  ""student"".""team_id""%TYPE,   -- NULL لإلغاء الانتساب
+    p_updated_by  IN  NUMBER,
+    p_result_code OUT NUMBER,
+    p_result_msg  OUT VARCHAR2
+) AS
+    v_student_dept  NUMBER;
+    v_team_dept     NUMBER;
+    v_has_team      NUMBER;
+    v_student_count NUMBER;
+    v_team_count    NUMBER;
+BEGIN
+    -- التحقق من وجود الطالب
+    SELECT COUNT(*), MAX(""department_id"")
+    INTO v_student_count, v_student_dept
+    FROM ""student""
+    WHERE ""student_id"" = p_student_id AND ""is_deleted"" = 0;
+
+    IF v_student_count = 0 THEN
+        p_result_code := 1;
+        p_result_msg  := 'الطالب غير موجود';
+        RETURN;
+    END IF;
+
+    -- إذا كان p_team_id = NULL → إلغاء الانتساب فقط
+    IF p_team_id IS NULL THEN
+        UPDATE ""student""
+        SET ""team_id""           = NULL,
+            ""updated_at""        = SYSTIMESTAMP,
+            ""updated_by_user_id"" = p_updated_by
+        WHERE ""student_id"" = p_student_id;
+
+        COMMIT;
+        p_result_code := 0;
+        p_result_msg  := 'تم إلغاء انتساب الطالب من الفريق بنجاح';
+        RETURN;
+    END IF;
+
+    -- التحقق من وجود الفريق
+    SELECT COUNT(*), MAX(""department_id"")
+    INTO v_team_count, v_team_dept
+    FROM ""team""
+    WHERE ""team_id"" = p_team_id AND ""is_deleted"" = 0;
+
+    IF v_team_count = 0 THEN
+        p_result_code := 1;
+        p_result_msg  := 'الفريق المحدد غير موجود';
+        RETURN;
+    END IF;
+
+    -- التحقق: الطالب والفريق في نفس القسم؟
+    IF v_student_dept != v_team_dept THEN
+        p_result_code := 1;
+        p_result_msg  := 'الطالب والفريق لا ينتميان لنفس القسم';
+        RETURN;
+    END IF;
+
+    -- التحقق: هل الطالب منتسب لفريق آخر؟
+    v_has_team := FN_STUDENT_HAS_TEAM(p_student_id);
+
+    IF v_has_team = 1 THEN
+        p_result_code := 1;
+        p_result_msg  := 'الطالب منتسب لفريق آخر بالفعل. يرجى إلغاء انتسابه أولاً';
+        RETURN;
+    END IF;
+
+    -- إجراء الانتساب
+    UPDATE ""student""
+    SET ""team_id""           = p_team_id,
+        ""updated_at""        = SYSTIMESTAMP,
+        ""updated_by_user_id"" = p_updated_by
+    WHERE ""student_id"" = p_student_id;
+
+    COMMIT;
+    p_result_code := 0;
+    p_result_msg  := 'تم انتساب الطالب للفريق بنجاح';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        p_result_code := 1;
+        p_result_msg  := 'خطأ غير متوقع: ' || SQLERRM;
+END SP_ASSIGN_STUDENT_TO_TEAM";
 }
+

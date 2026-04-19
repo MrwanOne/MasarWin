@@ -31,12 +31,30 @@ public static class DatabaseProceduresInitializer
         await CreateObject(context, "FN_SUPERVISOR_IS_COMMITTEE_MEMBER",
             SqlScripts.FN_SUPERVISOR_IS_COMMITTEE_MEMBER, cancellationToken);
 
+        await CreateObject(context, "FN_GET_STUDENT_COUNT_BY_DEPT",
+            SqlScripts.FN_GET_STUDENT_COUNT_BY_DEPT, cancellationToken);
+
+        await CreateObject(context, "FN_STUDENT_HAS_TEAM",
+            SqlScripts.FN_STUDENT_HAS_TEAM, cancellationToken);
+
         // Stored Procedures (تعتمد على الـ Functions)
         await CreateObject(context, "SP_ACCEPT_PROJECT",
             SqlScripts.SP_ACCEPT_PROJECT, cancellationToken);
 
         await CreateObject(context, "SP_SAVE_EVALUATION",
             SqlScripts.SP_SAVE_EVALUATION, cancellationToken);
+
+        await CreateObject(context, "SP_ADD_STUDENT",
+            SqlScripts.SP_ADD_STUDENT, cancellationToken);
+
+        await CreateObject(context, "SP_UPDATE_STUDENT",
+            SqlScripts.SP_UPDATE_STUDENT, cancellationToken);
+
+        await CreateObject(context, "SP_DELETE_STUDENT",
+            SqlScripts.SP_DELETE_STUDENT, cancellationToken);
+
+        await CreateObject(context, "SP_ASSIGN_STUDENT_TO_TEAM",
+            SqlScripts.SP_ASSIGN_STUDENT_TO_TEAM, cancellationToken);
 
         // Triggers
         await CreateObject(context, "TRG_NO_SUPERVISOR_IN_OWN_COMMITTEE",
