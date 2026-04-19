@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Masar.Application.Interfaces;
 
 /// <summary>
-/// استعلامات الـ Views في Oracle — تستبدل Include chains الثقيلة
+/// استعلامات الـ Views في Oracle
 /// </summary>
 public interface IViewRepository
 {

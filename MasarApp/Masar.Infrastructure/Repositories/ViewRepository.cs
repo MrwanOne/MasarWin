@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Masar.Infrastructure.Repositories;
 
 /// <summary>
-/// استعلام الـ Views في Oracle بدلاً من Include chains الثقيلة.
+/// استعلام الـ Views في Oracle.
 /// يُعيد تسمية أعمدة Oracle (snake_case) لتطابق خصائص الـ DTO (PascalCase).
 /// </summary>
 public class ViewRepository : IViewRepository

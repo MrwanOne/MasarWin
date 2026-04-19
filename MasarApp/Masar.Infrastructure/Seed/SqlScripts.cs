@@ -1,9 +1,5 @@
 namespace Masar.Infrastructure.Seed;
 
-/// <summary>
-/// نصوص SQL لإنشاء Functions وStored Procedures وTriggers في Oracle.
-/// يُستدعى مرة واحدة عند بدء التطبيق عبر DatabaseProceduresInitializer.
-/// </summary>
 internal static class SqlScripts
 {
     // ═══════════════════════════════════════════════════════════════
@@ -25,7 +21,6 @@ END FN_CALC_FINAL_SCORE";
 
     /// <summary>
     /// تُرجع عدد المشاريع النشطة التي يشرف عليها الدكتور.
-    /// تستبدل منطق EnsureSupervisionCapacity في ProjectService الذي كان يجلب كل المشاريع.
     /// </summary>
     public const string FN_GET_SUPERVISOR_PROJECT_COUNT = @"
 CREATE OR REPLACE FUNCTION FN_GET_SUPERVISOR_PROJECT_COUNT(
@@ -65,7 +60,6 @@ END FN_SUPERVISOR_IS_COMMITTEE_MEMBER";
 
     /// <summary>
     /// تقبل مشروعاً وتعيّن مشرفاً وتسجل السجل في ProjectStatusHistory.
-    /// تستبدل 4 استعلامات منفصلة في ProjectService.AcceptAsync.
     /// p_result_code: 0=نجاح، 1=خطأ.
     /// </summary>
     public const string SP_ACCEPT_PROJECT = @"
