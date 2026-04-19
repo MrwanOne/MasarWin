@@ -110,23 +110,50 @@ public partial class App : System.Windows.Application
             var services = scope.ServiceProvider;
             var localizationService = services.GetRequiredService<ILocalizationService>();
 
+            // ─── Migration ───────────────────────────────────────────────
+            var dbFactory = services.GetRequiredService<IDbContextFactory<MasarDbContext>>();
             try
             {
-                var dbFactory = services.GetRequiredService<IDbContextFactory<MasarDbContext>>();
-                await using (var dbContext = await dbFactory.CreateDbContextAsync())
-                {
-                    await dbContext.Database.MigrateAsync();
-                }
+                await using var dbContext = await dbFactory.CreateDbContextAsync();
+                await dbContext.Database.MigrateAsync();
+                Serilog.Log.Information("Database migration completed.");
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Error(ex, "Database migration failed.");
+                MessageBox.Show($"Migration Error:\n{ex.Message}", "Masar - Migration", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
 
-                // إنشاء/تحديث Oracle Views مرة واحدة عند Startup
+            // ─── Views ───────────────────────────────────────────────────
+            try
+            {
                 await DatabaseViewsInitializer.InitializeAsync(dbFactory);
+                Serilog.Log.Information("Database Views initialized.");
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Error(ex, "DatabaseViewsInitializer failed.");
+                MessageBox.Show($"Views Init Error:\n{ex.Message}", "Masar - Views", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
 
-                // إنشاء/تحديث Oracle Functions وProcedures وTriggers عند Startup
+            // ─── Functions, Procedures, Triggers ─────────────────────────
+            try
+            {
                 await DatabaseProceduresInitializer.InitializeAsync(dbFactory);
+                Serilog.Log.Information("Database Procedures/Functions/Triggers initialized.");
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Error(ex, "DatabaseProceduresInitializer failed.");
+                MessageBox.Show($"Procedures Init Error:\n{ex.Message}", "Masar - Procedures", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
 
+            // ─── Seed ─────────────────────────────────────────────────────
+            try
+            {
                 var passwordHasher = services.GetRequiredService<IPasswordHasher>();
-
                 await DbSeeder.SeedAdminAsync(dbFactory, passwordHasher);
+                Serilog.Log.Information("Database seeding completed.");
             }
             catch (Exception ex)
             {
