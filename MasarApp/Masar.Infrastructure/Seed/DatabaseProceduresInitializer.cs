@@ -1,6 +1,7 @@
 using Masar.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,55 +22,67 @@ public static class DatabaseProceduresInitializer
 
         Console.WriteLine("DatabaseProceduresInitializer: Creating/updating Functions, Procedures, Triggers...");
 
+        var failures = new List<string>();
+
         // Functions (تُنشأ أولاً لأن الـ Procedures تعتمد عليها)
         await CreateObject(context, "FN_CALC_FINAL_SCORE",
-            SqlScripts.FN_CALC_FINAL_SCORE, cancellationToken);
+            SqlScripts.FN_CALC_FINAL_SCORE, failures, cancellationToken);
 
         await CreateObject(context, "FN_GET_SUPERVISOR_PROJECT_COUNT",
-            SqlScripts.FN_GET_SUPERVISOR_PROJECT_COUNT, cancellationToken);
+            SqlScripts.FN_GET_SUPERVISOR_PROJECT_COUNT, failures, cancellationToken);
 
         await CreateObject(context, "FN_SUPERVISOR_IS_COMMITTEE_MEMBER",
-            SqlScripts.FN_SUPERVISOR_IS_COMMITTEE_MEMBER, cancellationToken);
+            SqlScripts.FN_SUPERVISOR_IS_COMMITTEE_MEMBER, failures, cancellationToken);
 
         await CreateObject(context, "FN_GET_STUDENT_COUNT_BY_DEPT",
-            SqlScripts.FN_GET_STUDENT_COUNT_BY_DEPT, cancellationToken);
+            SqlScripts.FN_GET_STUDENT_COUNT_BY_DEPT, failures, cancellationToken);
 
         await CreateObject(context, "FN_STUDENT_HAS_TEAM",
-            SqlScripts.FN_STUDENT_HAS_TEAM, cancellationToken);
+            SqlScripts.FN_STUDENT_HAS_TEAM, failures, cancellationToken);
 
         // Stored Procedures (تعتمد على الـ Functions)
         await CreateObject(context, "SP_ACCEPT_PROJECT",
-            SqlScripts.SP_ACCEPT_PROJECT, cancellationToken);
+            SqlScripts.SP_ACCEPT_PROJECT, failures, cancellationToken);
 
         await CreateObject(context, "SP_SAVE_EVALUATION",
-            SqlScripts.SP_SAVE_EVALUATION, cancellationToken);
+            SqlScripts.SP_SAVE_EVALUATION, failures, cancellationToken);
 
         await CreateObject(context, "SP_ADD_STUDENT",
-            SqlScripts.SP_ADD_STUDENT, cancellationToken);
+            SqlScripts.SP_ADD_STUDENT, failures, cancellationToken);
 
         await CreateObject(context, "SP_UPDATE_STUDENT",
-            SqlScripts.SP_UPDATE_STUDENT, cancellationToken);
+            SqlScripts.SP_UPDATE_STUDENT, failures, cancellationToken);
 
         await CreateObject(context, "SP_DELETE_STUDENT",
-            SqlScripts.SP_DELETE_STUDENT, cancellationToken);
+            SqlScripts.SP_DELETE_STUDENT, failures, cancellationToken);
 
         await CreateObject(context, "SP_ASSIGN_STUDENT_TO_TEAM",
-            SqlScripts.SP_ASSIGN_STUDENT_TO_TEAM, cancellationToken);
+            SqlScripts.SP_ASSIGN_STUDENT_TO_TEAM, failures, cancellationToken);
 
         // Triggers
         await CreateObject(context, "TRG_NO_SUPERVISOR_IN_OWN_COMMITTEE",
-            SqlScripts.TRG_NO_SUPERVISOR_IN_OWN_COMMITTEE, cancellationToken);
+            SqlScripts.TRG_NO_SUPERVISOR_IN_OWN_COMMITTEE, failures, cancellationToken);
 
         await CreateObject(context, "TRG_CALC_FINAL_SCORE",
-            SqlScripts.TRG_CALC_FINAL_SCORE, cancellationToken);
+            SqlScripts.TRG_CALC_FINAL_SCORE, failures, cancellationToken);
 
-        Console.WriteLine("DatabaseProceduresInitializer: All objects created/updated successfully.");
+        if (failures.Count == 0)
+        {
+            Console.WriteLine("DatabaseProceduresInitializer: All objects created/updated successfully.");
+        }
+        else
+        {
+            var msg = $"DatabaseProceduresInitializer: Completed with {failures.Count} failure(s): {string.Join(", ", failures)}";
+            Console.Error.WriteLine(msg);
+            throw new InvalidOperationException(msg);
+        }
     }
 
     private static async Task CreateObject(
         MasarDbContext context,
         string objectName,
         string sql,
+        List<string> failures,
         CancellationToken cancellationToken)
     {
         try
@@ -81,7 +94,8 @@ public static class DatabaseProceduresInitializer
         {
             Console.Error.WriteLine(
                 $"DatabaseProceduresInitializer: Failed to create '{objectName}'. Exception: {ex.Message}");
-            throw;
+            failures.Add(objectName);
+            // لا نوقف العملية - نكمل إنشاء باقي الكائنات
         }
     }
 }
