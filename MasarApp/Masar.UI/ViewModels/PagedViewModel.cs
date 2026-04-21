@@ -24,7 +24,7 @@ public abstract class PagedViewModel<T> : ViewModelBase
         }
     }
 
-    private int _pageSize = 10;
+    private int _pageSize = 20;
     public int PageSize
     {
         get => _pageSize;
