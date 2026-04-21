@@ -64,12 +64,24 @@
 
                     <StackPanel Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Margin="0,0,0,12">
                         <TextBlock Text="{DynamicResource Label.College}" Margin="0,0,0,4" />
-                        <ComboBox ItemsSource="{Binding Colleges}" DisplayMemberPath="NameEn" SelectedValuePath="CollegeId" SelectedValue="{Binding SelectedCollegeId}" />
+                        <ComboBox ItemsSource="{Binding Colleges}"  SelectedValuePath="CollegeId" SelectedValue="{Binding SelectedCollegeId}" >
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ., Converter={StaticResource LocalizedNameConverter}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
 
                     <StackPanel Grid.Column="0" Grid.Row="4" Margin="0,0,12,12">
                         <TextBlock Text="{DynamicResource Label.Department}" Margin="0,0,0,4" />
-                        <ComboBox ItemsSource="{Binding Departments}" DisplayMemberPath="NameEn" SelectedValuePath="DepartmentId" SelectedValue="{Binding SelectedDepartmentId}" />
+                        <ComboBox ItemsSource="{Binding Departments}"  SelectedValuePath="DepartmentId" SelectedValue="{Binding SelectedDepartmentId}" >
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ., Converter={StaticResource LocalizedNameConverter}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Grid.Row="4" Margin="0,0,0,12">

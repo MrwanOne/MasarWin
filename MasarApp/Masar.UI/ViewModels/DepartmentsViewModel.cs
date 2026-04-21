@@ -83,7 +83,7 @@ public class DepartmentsViewModel : PagedViewModel<DepartmentDto>
         try
         {
             Colleges.Clear();
-            var placeholder = new CollegeDto { CollegeId = 0, NameAr = _localizationService.GetString("Placeholder.SelectCollege") };
+            var placeholder = new CollegeDto { CollegeId = 0, NameAr = _localizationService.GetString("Placeholder.AllColleges") };
             Colleges.Add(placeholder);
 
             var colleges = await _collegeService.GetAllAsync();
@@ -92,8 +92,7 @@ public class DepartmentsViewModel : PagedViewModel<DepartmentDto>
                 Colleges.Add(college);
             }
 
-            var newCollegeId = Colleges.Count > 1 ? Colleges[1].CollegeId : 0;
-            _selectedCollegeId = newCollegeId;
+            _selectedCollegeId = 0;
             OnPropertyChanged(nameof(SelectedCollegeId));
             await LoadDepartmentsForCollegeAsync();
         }
@@ -111,15 +110,19 @@ public class DepartmentsViewModel : PagedViewModel<DepartmentDto>
     {
         try
         {
+            var departments = await _departmentService.GetAllAsync();
+
             if (SelectedCollegeId == 0)
             {
-                SetItems(System.Array.Empty<DepartmentDto>());
-                return;
+                // Show all departments when "All Colleges" is selected
+                SetItems(departments.OrderBy(d => d.NameAr));
+            }
+            else
+            {
+                var filtered = departments.Where(d => d.CollegeId == SelectedCollegeId).OrderBy(d => d.NameAr);
+                SetItems(filtered);
             }
 
-            var departments = await _departmentService.GetAllAsync();
-            var filtered = departments.Where(d => d.CollegeId == SelectedCollegeId).OrderBy(d => d.NameAr);
-            SetItems(filtered);
             AddCommand.RaiseCanExecuteChanged();
         }
         catch (System.Exception ex)

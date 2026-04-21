@@ -39,12 +39,24 @@
 
                         <StackPanel Grid.Column="0" Grid.Row="1" Margin="0,0,12,0">
                             <TextBlock Text="{DynamicResource Label.College}" />
-                            <ComboBox ItemsSource="{Binding Colleges}" DisplayMemberPath="NameEn" SelectedValuePath="CollegeId" SelectedValue="{Binding SelectedCollegeId}" />
+                            <ComboBox ItemsSource="{Binding Colleges}"  SelectedValuePath="CollegeId" SelectedValue="{Binding SelectedCollegeId}" >
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ., Converter={StaticResource LocalizedNameConverter}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Grid.Row="1">
                             <TextBlock Text="{DynamicResource Label.Department}" />
-                            <ComboBox ItemsSource="{Binding Departments}" DisplayMemberPath="NameEn" SelectedValuePath="DepartmentId" SelectedValue="{Binding SelectedDepartmentId}" />
+                            <ComboBox ItemsSource="{Binding Departments}"  SelectedValuePath="DepartmentId" SelectedValue="{Binding SelectedDepartmentId}" >
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ., Converter={StaticResource LocalizedNameConverter}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                         </StackPanel>
 
                         <StackPanel Grid.Column="0" Grid.Row="2" Margin="0,0,12,0">

@@ -110,6 +110,9 @@ public partial class App : System.Windows.Application
             var services = scope.ServiceProvider;
             var localizationService = services.GetRequiredService<ILocalizationService>();
 
+            // ربط خدمة اللغة بالـ Converter حتى يعرض الاسم الصحيح حسب اللغة
+            Masar.UI.Converters.LocalizedNameConverter.LocalizationService = localizationService;
+
             // ─── Migration ───────────────────────────────────────────────
             var dbFactory = services.GetRequiredService<IDbContextFactory<MasarDbContext>>();
             try

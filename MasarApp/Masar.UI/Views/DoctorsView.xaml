@@ -19,9 +19,21 @@
                     </StackPanel>
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="12,0,0,0">
                         <TextBlock Text="{DynamicResource Label.College}" VerticalAlignment="Center" Margin="0,0,4,0" />
-                        <ComboBox ItemsSource="{Binding Colleges}" DisplayMemberPath="NameEn" SelectedValuePath="CollegeId" SelectedValue="{Binding SelectedCollegeId}" Width="140" Margin="0,0,12,0" />
+                        <ComboBox ItemsSource="{Binding Colleges}"  SelectedValuePath="CollegeId" SelectedValue="{Binding SelectedCollegeId}" Width="160" Margin="0,0,12,0" >
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ., Converter={StaticResource LocalizedNameConverter}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                         <TextBlock Text="{DynamicResource Label.Department}" VerticalAlignment="Center" Margin="0,0,4,0" />
-                        <ComboBox ItemsSource="{Binding Departments}" DisplayMemberPath="NameEn" SelectedValuePath="DepartmentId" SelectedValue="{Binding SelectedDepartmentId}" Width="140" Margin="0,0,12,0" />
+                        <ComboBox ItemsSource="{Binding Departments}"  SelectedValuePath="DepartmentId" SelectedValue="{Binding SelectedDepartmentId}" Width="160" Margin="0,0,12,0" >
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ., Converter={StaticResource LocalizedNameConverter}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                         <TextBox Width="150" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
                         <Button Content="{DynamicResource Button.Refresh}" Command="{Binding RefreshCommand}" Style="{StaticResource GhostButtonStyle}" />
                     </StackPanel>

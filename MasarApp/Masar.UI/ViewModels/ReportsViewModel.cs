@@ -128,8 +128,8 @@ public class ReportsViewModel : ViewModelBase
             Colleges.Add(new CollegeDto
             {
                 CollegeId = 0,
-                NameAr = _localizationService.GetString("Placeholder.SelectCollege"),
-                NameEn = _localizationService.GetString("Placeholder.SelectCollege")
+                NameAr = _localizationService.GetString("Placeholder.AllColleges"),
+                NameEn = _localizationService.GetString("Placeholder.AllColleges")
             });
             var collegesToAdd = await _collegeService.GetAllAsync();
             foreach (var c in collegesToAdd) Colleges.Add(c);
@@ -157,8 +157,8 @@ public class ReportsViewModel : ViewModelBase
         FilteredDepartments.Add(new DepartmentDto
         {
             DepartmentId = 0,
-            NameAr = _localizationService.GetString("Placeholder.SelectDepartment"),
-            NameEn = _localizationService.GetString("Placeholder.SelectDepartment")
+            NameAr = _localizationService.GetString("Placeholder.AllDepartments"),
+            NameEn = _localizationService.GetString("Placeholder.AllDepartments")
         });
 
         var filtered = Departments.AsEnumerable();
