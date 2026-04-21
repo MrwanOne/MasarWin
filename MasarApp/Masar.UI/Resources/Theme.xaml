@@ -153,7 +153,7 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Background" Value="White" />
         <Setter Property="Foreground" Value="#0F172A" />
-        <Setter Property="HorizontalContentAlignment" Value="Right" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Template">
@@ -168,9 +168,10 @@
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="30" />
+                                    <ColumnDefinition Width="28" />
                                 </Grid.ColumnDefinitions>
-                                <!-- Selected content -->
+
+                                <!-- العنصر المحدد -->
                                 <ContentPresenter x:Name="ContentSite"
                                                   Grid.Column="0"
                                                   Content="{TemplateBinding SelectionBoxItem}"
@@ -178,44 +179,54 @@
                                                   ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
                                                   Margin="{TemplateBinding Padding}"
                                                   VerticalAlignment="Center"
-                                                  HorizontalAlignment="Stretch" />
-                                <!-- Arrow button -->
+                                                  HorizontalAlignment="Stretch"
+                                                  IsHitTestVisible="False" />
+
+                                <!-- زر السهم - له Template خاص لتجنب inheritance loop -->
                                 <ToggleButton x:Name="ToggleButton"
-                                              Grid.Column="1"
+                                              Grid.ColumnSpan="2"
                                               Focusable="False"
                                               IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
-                                              ClickMode="Press"
-                                              Background="Transparent"
-                                              BorderThickness="0"
-                                              Cursor="Hand">
-                                    <Path x:Name="Arrow"
-                                          Data="M 0 0 L 4 4 L 8 0 Z"
-                                          Fill="{StaticResource MutedTextBrush}"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center" />
+                                              ClickMode="Press">
+                                    <ToggleButton.Template>
+                                        <ControlTemplate TargetType="ToggleButton">
+                                            <Border Background="Transparent">
+                                                <Path x:Name="Arrow"
+                                                      Data="M 0 0 L 5 5 L 10 0 Z"
+                                                      Fill="#64748B"
+                                                      Width="10" Height="5"
+                                                      HorizontalAlignment="Right"
+                                                      VerticalAlignment="Center"
+                                                      Margin="0,0,10,0"
+                                                      Stretch="Fill" />
+                                            </Border>
+                                        </ControlTemplate>
+                                    </ToggleButton.Template>
                                 </ToggleButton>
                             </Grid>
                         </Border>
-                        <!-- Dropdown popup -->
+
+                        <!-- القائمة المنسدلة -->
                         <Popup x:Name="Popup"
                                Placement="Bottom"
                                IsOpen="{TemplateBinding IsDropDownOpen}"
                                AllowsTransparency="True"
                                Focusable="False"
                                PopupAnimation="Slide">
-                            <Grid x:Name="DropDown" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="300">
-                                <Border x:Name="DropDownBorder"
-                                        Background="White"
-                                        BorderBrush="{StaticResource BorderBrush}"
-                                        BorderThickness="1"
-                                        CornerRadius="10"
-                                        Margin="0,2,0,0"
-                                        Effect="{DynamicResource {x:Static SystemParameters.DropShadowKey}}">
-                                    <ScrollViewer>
-                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
-                                    </ScrollViewer>
-                                </Border>
-                            </Grid>
+                            <Border x:Name="DropDownBorder"
+                                    MinWidth="{TemplateBinding ActualWidth}"
+                                    MaxHeight="300"
+                                    Background="White"
+                                    BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Margin="0,2,0,0">
+                                <ScrollViewer CanContentScroll="True">
+                                    <StackPanel IsItemsHost="True"
+                                                KeyboardNavigation.DirectionalNavigation="Contained"
+                                                Margin="4,4" />
+                                </ScrollViewer>
+                            </Border>
                         </Popup>
                     </Grid>
                     <ControlTemplate.Triggers>
@@ -225,7 +236,6 @@
                         <Trigger Property="IsDropDownOpen" Value="True">
                             <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
                             <Setter TargetName="Border" Property="BorderThickness" Value="2" />
-                            <Setter TargetName="Arrow" Property="Data" Value="M 0 4 L 4 0 L 8 4 Z" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="Border" Property="Opacity" Value="0.6" />
@@ -249,7 +259,7 @@
                             Background="Transparent"
                             Padding="{TemplateBinding Padding}"
                             CornerRadius="6"
-                            Margin="4,1">
+                            Margin="0,1">
                         <ContentPresenter HorizontalAlignment="Stretch" />
                     </Border>
                     <ControlTemplate.Triggers>
