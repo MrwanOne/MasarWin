@@ -50,7 +50,7 @@ public class CommitteeService : ICommitteeService
         var authCheck = EnsureAuthorized(UserRole.Admin, UserRole.HeadOfDepartment);
         if (authCheck.IsFailure) return Result<CommitteeDto>.Failure(authCheck.Message);
 
-        if (string.IsNullOrWhiteSpace(dto.Name)) return Result<CommitteeDto>.Failure("Committee name is required.");
+        if (string.IsNullOrWhiteSpace(dto.Name)) return Result<CommitteeDto>.Failure("اسم اللجنة مطلوب. / Committee name is required.");
 
         // DepartmentId is now optional - committees can be associated with College only
         if (dto.DepartmentId > 0)
@@ -77,10 +77,10 @@ public class CommitteeService : ICommitteeService
         var authCheck = EnsureAuthorized(UserRole.Admin, UserRole.HeadOfDepartment);
         if (authCheck.IsFailure) return Result<CommitteeDto>.Failure(authCheck.Message);
 
-        if (string.IsNullOrWhiteSpace(dto.Name)) return Result<CommitteeDto>.Failure("Committee name is required.");
+        if (string.IsNullOrWhiteSpace(dto.Name)) return Result<CommitteeDto>.Failure("اسم اللجنة مطلوب. / Committee name is required.");
 
         var entity = await _committees.GetByIdAsync(dto.CommitteeId, cancellationToken);
-        if (entity == null) return Result<CommitteeDto>.Failure("Committee not found.");
+        if (entity == null) return Result<CommitteeDto>.Failure("اللجنة غير موجودة. / Committee not found.");
 
         // DepartmentId is now optional - committees can be associated with College only
         if (dto.DepartmentId > 0)
@@ -104,7 +104,7 @@ public class CommitteeService : ICommitteeService
         if (authCheck.IsFailure) return authCheck;
 
         var entity = await _committees.GetByIdAsync(id, cancellationToken);
-        if (entity == null) return Result.Failure("Committee not found.");
+        if (entity == null) return Result.Failure("اللجنة غير موجودة. / Committee not found.");
 
         await _committees.DeleteAsync(entity, cancellationToken);
         return Result.Success();
@@ -116,10 +116,10 @@ public class CommitteeService : ICommitteeService
         if (authCheck.IsFailure) return Result<CommitteeDto>.Failure(authCheck.Message);
 
         var committee = await _committees.GetWithMembersAsync(committeeId, cancellationToken);
-        if (committee == null) return Result<CommitteeDto>.Failure("Committee not found.");
+        if (committee == null) return Result<CommitteeDto>.Failure("اللجنة غير موجودة. / Committee not found.");
 
         var doctor = await _doctors.GetWithDepartmentAsync(doctorId, cancellationToken);
-        if (doctor == null) return Result<CommitteeDto>.Failure("Doctor not found.");
+        if (doctor == null) return Result<CommitteeDto>.Failure("الدكتور غير موجود. / Doctor not found.");
 
         var collegeCheck = await EnsureSameCollege(committee, doctor, cancellationToken);
         if (collegeCheck.IsFailure) return Result<CommitteeDto>.Failure(collegeCheck.Message);
@@ -129,14 +129,14 @@ public class CommitteeService : ICommitteeService
         var supervisedTeams = allTeams.Where(t => t.SupervisorId == doctorId && t.CommitteeId == committeeId).ToList();
         if (supervisedTeams.Any())
         {
-            return Result<CommitteeDto>.Failure("لا يمكن إضافة المشرف كعضو في لجنة تقيّم فريقه (تعارض مصالح)");
+            return Result<CommitteeDto>.Failure("لا يمكن إضافة المشرف كعضو في لجنة تقيّم فريقه (تعارض مصالح). / Supervisor cannot be a member of a committee evaluating their own team (conflict of interest).");
         }
 
         var hasCommitteeThisTerm = committee.TermId.HasValue && 
             await _committees.DoctorHasCommitteeInTermAsync(doctorId, committee.TermId.Value, committeeId, cancellationToken);
         if (hasCommitteeThisTerm)
         {
-            return Result<CommitteeDto>.Failure("This doctor already serves on a committee for the selected term.");
+            return Result<CommitteeDto>.Failure("هذا الدكتور عضو في لجنة أخرى لنفس الفصل الدراسي. / This doctor already serves on a committee for the selected term.");
         }
 
         // Use dedicated repository methods instead of Update for proper tracking
@@ -168,7 +168,7 @@ public class CommitteeService : ICommitteeService
         if (authCheck.IsFailure) return authCheck;
 
         var committee = await _committees.GetWithMembersAsync(committeeId, cancellationToken);
-        if (committee == null) return Result.Failure("Committee not found.");
+        if (committee == null) return Result.Failure("اللجنة غير موجودة. / Committee not found.");
 
         await _committees.RemoveMemberAsync(committeeId, doctorId, cancellationToken);
         return Result.Success();
@@ -177,7 +177,7 @@ public class CommitteeService : ICommitteeService
     private async Task<Result> EnsureDepartmentExists(int departmentId, CancellationToken cancellationToken)
     {
         var department = await _departments.GetWithCollegeAsync(departmentId, cancellationToken);
-        if (department == null) return Result.Failure("Department not found.");
+        if (department == null) return Result.Failure("القسم غير موجود. / Department not found.");
         return Result.Success();
     }
 
@@ -191,13 +191,13 @@ public class CommitteeService : ICommitteeService
         }
 
         var committeeDepartment = committee.Department ?? await _departments.GetWithCollegeAsync(committee.DepartmentId.Value, cancellationToken);
-        if (committeeDepartment == null) return Result.Failure("Department not found.");
+        if (committeeDepartment == null) return Result.Failure("القسم غير موجود. / Department not found.");
 
         if (doctor.DepartmentId != committeeDepartment.DepartmentId)
         {
             if (doctor.Department?.CollegeId != committeeDepartment.CollegeId)
             {
-                return Result.Failure("Doctor must belong to the same college as the committee.");
+                return Result.Failure("يجب أن ينتمي الدكتور إلى نفس الكلية التي تتبع لها اللجنة. / Doctor must belong to the same college as the committee.");
             }
         }
         return Result.Success();
@@ -205,10 +205,10 @@ public class CommitteeService : ICommitteeService
 
     private Result EnsureAuthorized(params UserRole[] allowedRoles)
     {
-        if (!_currentUser.IsAuthenticated) return Result.Failure("User is not authenticated.");
+        if (!_currentUser.IsAuthenticated) return Result.Failure("المستخدم غير مسجل الدخول. / User is not authenticated.");
         if (allowedRoles.Any() && !allowedRoles.Contains(_currentUser.Role ?? UserRole.Student))
         {
-            return Result.Failure("User is not authorized to perform this operation.");
+            return Result.Failure("ليس لديك صلاحية لتنفيذ هذه العملية. / User is not authorized to perform this operation.");
         }
         return Result.Success();
     }

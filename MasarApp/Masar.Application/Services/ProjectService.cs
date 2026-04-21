@@ -98,7 +98,7 @@ public class ProjectService : IProjectService
         if (authCheck.IsFailure) return Result<ProjectDto>.Failure(authCheck.Message);
 
         var entity = await _projects.GetByIdAsync(dto.ProjectId, cancellationToken);
-        if (entity == null) return Result<ProjectDto>.Failure("Project not found.");
+        if (entity == null) return Result<ProjectDto>.Failure("المشروع غير موجود. / Project not found.");
 
         // التحقق من صلاحية انتقال الحالة باستخدام آلة الحالة
         if (entity.Status != dto.Status)
@@ -153,7 +153,7 @@ public class ProjectService : IProjectService
         if (authCheck.IsFailure) return authCheck;
 
         var entity = await _projects.GetByIdAsync(id, cancellationToken);
-        if (entity == null) return Result.Failure("Project not found.");
+        if (entity == null) return Result.Failure("المشروع غير موجود. / Project not found.");
 
         await _projects.DeleteAsync(entity, cancellationToken);
         return Result.Success();
@@ -183,7 +183,7 @@ public class ProjectService : IProjectService
         if (authCheck.IsFailure) return Result<ProjectDto>.Failure(authCheck.Message);
 
         var entity = await _projects.GetByIdAsync(id, cancellationToken);
-        if (entity == null) return Result<ProjectDto>.Failure("Project not found.");
+        if (entity == null) return Result<ProjectDto>.Failure("المشروع غير موجود. / Project not found.");
 
         // التحقق من صلاحية الانتقال باستخدام آلة الحالة
         var userRole = _currentUser.Role ?? UserRole.Student;
@@ -215,7 +215,7 @@ public class ProjectService : IProjectService
         if (authCheck.IsFailure) return Result<ProjectDto>.Failure(authCheck.Message);
 
         var entity = await _projects.GetByIdAsync(id, cancellationToken);
-        if (entity == null) return Result<ProjectDto>.Failure("Project not found.");
+        if (entity == null) return Result<ProjectDto>.Failure("المشروع غير موجود. / Project not found.");
 
         var supCheck = await EnsureSupervisorMatchesDepartment(supervisorId, entity.DepartmentId, cancellationToken);
         if (supCheck.IsFailure) return Result<ProjectDto>.Failure(supCheck.Message);
@@ -234,7 +234,7 @@ public class ProjectService : IProjectService
         if (authCheck.IsFailure) return Result<ProjectDto>.Failure(authCheck.Message);
 
         var entity = await _projects.GetByIdAsync(id, cancellationToken);
-        if (entity == null) return Result<ProjectDto>.Failure("Project not found.");
+        if (entity == null) return Result<ProjectDto>.Failure("المشروع غير موجود. / Project not found.");
 
         entity.CompletionRate = ClampCompletion(completionRate);
         if (entity.CompletionRate >= 100)
@@ -265,7 +265,7 @@ public class ProjectService : IProjectService
         var existingTitle = await _projects.GetByTitleAsync(normalizedTitle, cancellationToken);
         if (existingTitle != null && (!isUpdate || existingTitle.ProjectId != projectId))
         {
-            return Result.Failure("A project with the same title already exists.");
+            return Result.Failure("يوجد مشروع بنفس العنوان مسبقاً. / A project with the same title already exists.");
         }
 
         var deptCheck = await EnsureDepartmentExists(dto.DepartmentId, cancellationToken);
@@ -276,14 +276,14 @@ public class ProjectService : IProjectService
             var existingTeamProject = await _projects.GetByTeamIdAsync(dto.TeamId.Value, cancellationToken);
             if (existingTeamProject != null && (!isUpdate || existingTeamProject.ProjectId != projectId))
             {
-                return Result.Failure("This team already has a project assigned.");
+                return Result.Failure("هذا الفريق لديه مشروع مخصص بالفعل. / This team already has a project assigned.");
             }
 
             var team = await _teams.GetWithDetailsAsync(dto.TeamId.Value, cancellationToken);
-            if (team == null) return Result.Failure("Team not found.");
+            if (team == null) return Result.Failure("الفريق غير موجود. / Team not found.");
             if (team.DepartmentId != dto.DepartmentId)
             {
-                return Result.Failure("Team must belong to the selected department.");
+                return Result.Failure("يجب أن ينتمي الفريق إلى القسم المحدد. / Team must belong to the selected department.");
             }
         }
 
@@ -299,26 +299,26 @@ public class ProjectService : IProjectService
     private async Task<Result> EnsureDepartmentExists(int departmentId, CancellationToken cancellationToken)
     {
         var dept = await _departments.GetByIdAsync(departmentId, cancellationToken);
-        return dept == null ? Result.Failure("Department not found.") : Result.Success();
+        return dept == null ? Result.Failure("القسم غير موجود. / Department not found.") : Result.Success();
     }
 
     private async Task<Result> EnsureSupervisorMatchesDepartment(int supervisorId, int departmentId, CancellationToken cancellationToken)
     {
         var supervisor = await _doctors.GetByIdAsync(supervisorId, cancellationToken);
-        if (supervisor == null) return Result.Failure("Supervisor not found.");
+        if (supervisor == null) return Result.Failure("المشرف غير موجود. / Supervisor not found.");
         if (supervisor.DepartmentId != departmentId)
         {
-            return Result.Failure("Supervisor must belong to the selected department.");
+            return Result.Failure("يجب أن ينتمي المشرف إلى القسم المحدد. / Supervisor must belong to the selected department.");
         }
         return Result.Success();
     }
 
     private Result EnsureAuthorized(params UserRole[] allowedRoles)
     {
-        if (!_currentUser.IsAuthenticated) return Result.Failure("User is not authenticated.");
+        if (!_currentUser.IsAuthenticated) return Result.Failure("المستخدم غير مسجل الدخول. / User is not authenticated.");
         if (allowedRoles.Any() && !allowedRoles.Contains(_currentUser.Role ?? UserRole.Student))
         {
-            return Result.Failure("User is not authorized to perform this operation.");
+            return Result.Failure("ليس لديك صلاحية لتنفيذ هذه العملية. / User is not authorized to perform this operation.");
         }
         return Result.Success();
     }
@@ -333,7 +333,7 @@ public class ProjectService : IProjectService
     private async Task<Result> EnsureSupervisionCapacity(int supervisorId, int? excludeProjectId, CancellationToken cancellationToken)
     {
         var doctor = await _doctors.GetByIdAsync(supervisorId, cancellationToken);
-        if (doctor == null) return Result.Failure("Supervisor not found.");
+        if (doctor == null) return Result.Failure("المشرف غير موجود. / Supervisor not found.");
 
         if (doctor.MaxSupervisionCount <= 0) return Result.Success();
 

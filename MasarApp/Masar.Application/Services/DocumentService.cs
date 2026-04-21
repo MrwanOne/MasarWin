@@ -64,7 +64,7 @@ public class DocumentService : IDocumentService
         }
         catch (Exception ex)
         {
-            return Result<DocumentDto>.Failure($"File upload failed: {ex.Message}");
+            return Result<DocumentDto>.Failure($"فشل رفع الملف: {ex.Message} / File upload failed: {ex.Message}");
         }
     }
 
@@ -77,7 +77,7 @@ public class DocumentService : IDocumentService
     public async Task<Result<Stream>> DownloadAsync(int documentId, CancellationToken cancellationToken = default)
     {
         var document = await _documents.GetByIdAsync(documentId, cancellationToken);
-        if (document == null) return Result<Stream>.Failure("Document not found.");
+        if (document == null) return Result<Stream>.Failure("المستند غير موجود. / Document not found.");
 
         return Result<Stream>.Success(new MemoryStream(document.Content));
     }
@@ -85,7 +85,7 @@ public class DocumentService : IDocumentService
     public async Task<Result> DeleteAsync(int documentId, CancellationToken cancellationToken = default)
     {
         var document = await _documents.GetByIdAsync(documentId, cancellationToken);
-        if (document == null) return Result.Failure("Document not found.");
+        if (document == null) return Result.Failure("المستند غير موجود. / Document not found.");
 
         await _documents.DeleteAsync(document, cancellationToken);
         return Result.Success();
@@ -94,7 +94,7 @@ public class DocumentService : IDocumentService
     public async Task<Result<DocumentDto>> ApproveAsync(int documentId, CancellationToken cancellationToken = default)
     {
         var document = await _documents.GetByIdAsync(documentId, cancellationToken);
-        if (document == null) return Result<DocumentDto>.Failure("Document not found.");
+        if (document == null) return Result<DocumentDto>.Failure("المستند غير موجود. / Document not found.");
 
         document.Status = "Approved";
         await _documents.UpdateAsync(document, cancellationToken);
@@ -104,7 +104,7 @@ public class DocumentService : IDocumentService
     public async Task<Result<DocumentDto>> RejectAsync(int documentId, CancellationToken cancellationToken = default)
     {
         var document = await _documents.GetByIdAsync(documentId, cancellationToken);
-        if (document == null) return Result<DocumentDto>.Failure("Document not found.");
+        if (document == null) return Result<DocumentDto>.Failure("المستند غير موجود. / Document not found.");
 
         document.Status = "Rejected";
         await _documents.UpdateAsync(document, cancellationToken);

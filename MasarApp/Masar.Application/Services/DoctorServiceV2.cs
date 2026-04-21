@@ -53,7 +53,7 @@ public class DoctorServiceV2 : IDoctorService
         var authCheck = EnsureAuthorized(UserRole.Admin, UserRole.HeadOfDepartment);
         if (authCheck.IsFailure) return Result<DoctorDto>.Failure(authCheck.Message);
 
-        if (string.IsNullOrWhiteSpace(dto.FullName)) return Result<DoctorDto>.Failure("Full name is required.");
+        if (string.IsNullOrWhiteSpace(dto.FullName)) return Result<DoctorDto>.Failure("الاسم الكامل مطلوب. / Full name is required.");
         
         var entity = new Doctor
         {
@@ -81,7 +81,7 @@ public class DoctorServiceV2 : IDoctorService
         if (authCheck.IsFailure) return Result<DoctorDto>.Failure(authCheck.Message);
 
         var entity = await _doctors.GetByIdAsync(dto.DoctorId, cancellationToken);
-        if (entity == null) return Result<DoctorDto>.Failure("Doctor not found.");
+        if (entity == null) return Result<DoctorDto>.Failure("الدكتور غير موجود. / Doctor not found.");
 
         entity.FullName = dto.FullName.Trim();
         entity.Email = dto.Email?.Trim();
@@ -106,17 +106,17 @@ public class DoctorServiceV2 : IDoctorService
         if (authCheck.IsFailure) return authCheck;
 
         var entity = await _doctors.GetByIdAsync(id, cancellationToken);
-        if (entity == null) return Result.Failure("Doctor not found.");
+        if (entity == null) return Result.Failure("الدكتور غير موجود. / Doctor not found.");
 
         await _doctors.DeleteAsync(entity, cancellationToken);
         return Result.Success();
     }
     private Result EnsureAuthorized(params UserRole[] allowedRoles)
     {
-        if (!_currentUser.IsAuthenticated) return Result.Failure("User is not authenticated.");
+        if (!_currentUser.IsAuthenticated) return Result.Failure("المستخدم غير مسجل الدخول. / User is not authenticated.");
         if (allowedRoles.Any() && !allowedRoles.Contains(_currentUser.Role ?? UserRole.Student))
         {
-            return Result.Failure("User is not authorized to perform this operation.");
+            return Result.Failure("ليس لديك صلاحية لتنفيذ هذه العملية. / User is not authorized to perform this operation.");
         }
         return Result.Success();
     }

@@ -75,7 +75,7 @@ public class DiscussionService : IDiscussionService
         if (authCheck.IsFailure) return Result<DiscussionDto>.Failure(authCheck.Message);
 
         var entity = await _discussions.GetByIdAsync(dto.DiscussionId, cancellationToken);
-        if (entity == null) return Result<DiscussionDto>.Failure("Discussion not found.");
+        if (entity == null) return Result<DiscussionDto>.Failure("المناقشة غير موجودة. / Discussion not found.");
 
         var valResult = ValidateSchedule(dto);
         if (valResult.IsFailure) return Result<DiscussionDto>.Failure(valResult.Message);
@@ -106,7 +106,7 @@ public class DiscussionService : IDiscussionService
         var entity = await _discussions.GetByIdAsync(id, cancellationToken);
         if (entity == null)
         {
-            return Result.Failure("Discussion not found.");
+            return Result.Failure("المناقشة غير موجودة. / Discussion not found.");
         }
 
         await _discussions.DeleteAsync(entity, cancellationToken);
@@ -134,15 +134,15 @@ public class DiscussionService : IDiscussionService
         var updated = await _discussions.GetByIdAsync(discussionId, cancellationToken);
         return updated is not null
             ? Result<DiscussionDto>.Success(updated.ToDto())
-            : Result<DiscussionDto>.Failure("Discussion not found after save.");
+            : Result<DiscussionDto>.Failure("لم يتم إيجاد المناقشة بعد الحفظ. / Discussion not found after save.");
     }
 
     private Result EnsureAuthorized(params UserRole[] allowedRoles)
     {
-        if (!_currentUser.IsAuthenticated) return Result.Failure("User is not authenticated.");
+        if (!_currentUser.IsAuthenticated) return Result.Failure("المستخدم غير مسجل الدخول. / User is not authenticated.");
         if (allowedRoles.Any() && !allowedRoles.Contains(_currentUser.Role ?? UserRole.Student))
         {
-            return Result.Failure("User is not authorized to perform this operation.");
+            return Result.Failure("ليس لديك صلاحية لتنفيذ هذه العملية. / User is not authorized to perform this operation.");
         }
         return Result.Success();
     }
@@ -151,17 +151,17 @@ public class DiscussionService : IDiscussionService
     {
         if (dto.StartTime == default || dto.EndTime == default)
         {
-            return Result.Failure("Discussion date and time are required.");
+            return Result.Failure("تاريخ ووقت المناقشة مطلوبان. / Discussion date and time are required.");
         }
 
         if (dto.EndTime <= dto.StartTime)
         {
-            return Result.Failure("Discussion end time must be after the start time.");
+            return Result.Failure("يجب أن يكون وقت انتهاء المناقشة بعد وقت بدايتها. / Discussion end time must be after the start time.");
         }
 
         if (string.IsNullOrWhiteSpace(dto.Place))
         {
-            return Result.Failure("Discussion place is required.");
+            return Result.Failure("مكان المناقشة مطلوب. / Discussion place is required.");
         }
 
         return Result.Success();
@@ -177,7 +177,7 @@ public class DiscussionService : IDiscussionService
 
         if (conflicts.Any())
         {
-            return Result.Failure("Discussion schedule conflicts with an existing entry.");
+            return Result.Failure("موعد المناقشة يتعارض مع موعد سابق. / Discussion schedule conflicts with an existing entry.");
         }
 
         return Result.Success();

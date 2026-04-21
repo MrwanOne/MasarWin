@@ -43,13 +43,13 @@ public class UserService : IUserService
 
         if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(password))
         {
-            return Result<UserDto>.Failure("Username and password are required.");
+            return Result<UserDto>.Failure("اسم المستخدم وكلمة المرور مطلوبان. / Username and password are required.");
         }
 
         var existing = await _users.GetByUsernameAsync(dto.Username.Trim(), cancellationToken);
         if (existing != null)
         {
-            return Result<UserDto>.Failure("A user with the same username already exists.");
+            return Result<UserDto>.Failure("يوجد مستخدم بنفس اسم المستخدم مسبقاً. / A user with the same username already exists.");
         }
 
         var hash = _passwordHasher.HashPassword(password, out var salt);
@@ -75,12 +75,12 @@ public class UserService : IUserService
         if (authCheck.IsFailure) return Result<UserDto>.Failure(authCheck.Message);
 
         var entity = await _users.GetByIdAsync(dto.UserId, cancellationToken);
-        if (entity == null) return Result<UserDto>.Failure("User not found.");
+        if (entity == null) return Result<UserDto>.Failure("المستخدم غير موجود. / User not found.");
 
         var normalizedUsername = dto.Username?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(normalizedUsername))
         {
-            return Result<UserDto>.Failure("Username is required.");
+            return Result<UserDto>.Failure("اسم المستخدم مطلوب. / Username is required.");
         }
 
         if (!string.Equals(entity.Username, normalizedUsername, StringComparison.OrdinalIgnoreCase))
@@ -88,7 +88,7 @@ public class UserService : IUserService
             var existing = await _users.GetByUsernameAsync(normalizedUsername, cancellationToken);
             if (existing != null && existing.UserId != entity.UserId)
             {
-                return Result<UserDto>.Failure("A user with the same username already exists.");
+                return Result<UserDto>.Failure("يوجد مستخدم بنفس اسم المستخدم مسبقاً. / A user with the same username already exists.");
             }
         }
 
@@ -108,7 +108,7 @@ public class UserService : IUserService
         if (authCheck.IsFailure) return authCheck;
 
         var entity = await _users.GetByIdAsync(id, cancellationToken);
-        if (entity == null) return Result.Failure("User not found.");
+        if (entity == null) return Result.Failure("المستخدم غير موجود. / User not found.");
 
         await _users.DeleteAsync(entity, cancellationToken);
         return Result.Success();
@@ -120,7 +120,7 @@ public class UserService : IUserService
         if (authCheck.IsFailure) return Result<UserDto>.Failure(authCheck.Message);
 
         var entity = await _users.GetByIdAsync(id, cancellationToken);
-        if (entity == null) return Result<UserDto>.Failure("User not found.");
+        if (entity == null) return Result<UserDto>.Failure("المستخدم غير موجود. / User not found.");
 
         entity.IsActive = isActive;
         await _users.UpdateAsync(entity, cancellationToken);
@@ -131,16 +131,16 @@ public class UserService : IUserService
     {
         if (_currentUser.Role != UserRole.Admin && _currentUser.UserId != id)
         {
-            return Result<UserDto>.Failure("You are not authorized to reset this password.");
+            return Result<UserDto>.Failure("ليس لديك صلاحية إعادة تعيين كلمة المرور هذه. / You are not authorized to reset this password.");
         }
 
         if (string.IsNullOrWhiteSpace(newPassword))
         {
-            return Result<UserDto>.Failure("New password is required.");
+            return Result<UserDto>.Failure("كلمة المرور الجديدة مطلوبة. / New password is required.");
         }
 
         var entity = await _users.GetByIdAsync(id, cancellationToken);
-        if (entity == null) return Result<UserDto>.Failure("User not found.");
+        if (entity == null) return Result<UserDto>.Failure("المستخدم غير موجود. / User not found.");
 
         entity.PasswordHash = _passwordHasher.HashPassword(newPassword, out var salt);
         entity.PasswordSalt = salt;
@@ -151,10 +151,10 @@ public class UserService : IUserService
 
     private Result EnsureAuthorized(params UserRole[] allowedRoles)
     {
-        if (!_currentUser.IsAuthenticated) return Result.Failure("User is not authenticated.");
+        if (!_currentUser.IsAuthenticated) return Result.Failure("المستخدم غير مسجل الدخول. / User is not authenticated.");
         if (allowedRoles.Any() && !allowedRoles.Contains(_currentUser.Role ?? UserRole.Student))
         {
-            return Result.Failure("User is not authorized to perform this operation.");
+            return Result.Failure("ليس لديك صلاحية لتنفيذ هذه العملية. / User is not authorized to perform this operation.");
         }
         return Result.Success();
     }

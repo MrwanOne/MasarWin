@@ -56,11 +56,11 @@ public class StudentServiceV2 : IStudentService
         var authCheck = EnsureAuthorized(UserRole.Admin, UserRole.HeadOfDepartment);
         if (authCheck.IsFailure) return Result<StudentDto>.Failure(authCheck.Message);
 
-        if (string.IsNullOrWhiteSpace(dto.FullName)) return Result<StudentDto>.Failure("Full name is required.");
-        if (string.IsNullOrWhiteSpace(dto.StudentNumber)) return Result<StudentDto>.Failure("Student number is required.");
+        if (string.IsNullOrWhiteSpace(dto.FullName)) return Result<StudentDto>.Failure("الاسم الكامل مطلوب. / Full name is required.");
+        if (string.IsNullOrWhiteSpace(dto.StudentNumber)) return Result<StudentDto>.Failure("رقم الطالب مطلوب. / Student number is required.");
         
         var existing = await _students.GetByStudentNumberAsync(dto.StudentNumber, cancellationToken);
-        if (existing != null) return Result<StudentDto>.Failure("A student with this number already exists.");
+        if (existing != null) return Result<StudentDto>.Failure("يوجد طالب بنفس الرقم مسبقاً. / A student with this number already exists.");
 
         var entity = new Student
         {
@@ -88,12 +88,12 @@ public class StudentServiceV2 : IStudentService
         if (authCheck.IsFailure) return Result<StudentDto>.Failure(authCheck.Message);
 
         var entity = await _students.GetByIdAsync(dto.StudentId, cancellationToken);
-        if (entity == null) return Result<StudentDto>.Failure("Student not found.");
+        if (entity == null) return Result<StudentDto>.Failure("الطالب غير موجود. / Student not found.");
 
-        if (string.IsNullOrWhiteSpace(dto.StudentNumber)) return Result<StudentDto>.Failure("Student number is required.");
+        if (string.IsNullOrWhiteSpace(dto.StudentNumber)) return Result<StudentDto>.Failure("رقم الطالب مطلوب. / Student number is required.");
         var existing = await _students.GetByStudentNumberAsync(dto.StudentNumber, cancellationToken);
         if (existing != null && existing.StudentId != dto.StudentId) 
-            return Result<StudentDto>.Failure("A student with this number already exists.");
+            return Result<StudentDto>.Failure("يوجد طالب بنفس الرقم مسبقاً. / A student with this number already exists.");
 
         entity.StudentNumber = dto.StudentNumber.Trim();
         entity.FullName = dto.FullName.Trim();
@@ -118,7 +118,7 @@ public class StudentServiceV2 : IStudentService
         if (authCheck.IsFailure) return authCheck;
 
         var entity = await _students.GetByIdAsync(id, cancellationToken);
-        if (entity == null) return Result.Failure("Student not found.");
+        if (entity == null) return Result.Failure("الطالب غير موجود. / Student not found.");
 
         await _students.DeleteAsync(entity, cancellationToken);
         return Result.Success();
@@ -130,7 +130,7 @@ public class StudentServiceV2 : IStudentService
         if (authCheck.IsFailure) return Result<StudentDto>.Failure(authCheck.Message);
 
         var entity = await _students.GetByIdAsync(studentId, cancellationToken);
-        if (entity == null) return Result<StudentDto>.Failure("Student not found.");
+        if (entity == null) return Result<StudentDto>.Failure("الطالب غير موجود. / Student not found.");
         
         entity.TeamId = teamId == 0 ? null : teamId;
         await _students.UpdateAsync(entity, cancellationToken);
@@ -141,10 +141,10 @@ public class StudentServiceV2 : IStudentService
 
     private Result EnsureAuthorized(params UserRole[] allowedRoles)
     {
-        if (!_currentUser.IsAuthenticated) return Result.Failure("User is not authenticated.");
+        if (!_currentUser.IsAuthenticated) return Result.Failure("المستخدم غير مسجل الدخول. / User is not authenticated.");
         if (allowedRoles.Any() && !allowedRoles.Contains(_currentUser.Role ?? UserRole.Student))
         {
-            return Result.Failure("User is not authorized to perform this operation.");
+            return Result.Failure("ليس لديك صلاحية لتنفيذ هذه العملية. / User is not authorized to perform this operation.");
         }
         return Result.Success();
     }

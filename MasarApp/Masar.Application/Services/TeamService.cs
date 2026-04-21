@@ -45,7 +45,7 @@ public class TeamService : ITeamService
 
         if (string.IsNullOrWhiteSpace(dto.Name))
         {
-            return Result<TeamDto>.Failure("Team name is required.");
+            return Result<TeamDto>.Failure("اسم الفريق مطلوب. / Team name is required.");
         }
 
         if (dto.SupervisorId.HasValue && dto.SupervisorId.Value > 0)
@@ -76,7 +76,7 @@ public class TeamService : ITeamService
         var entity = await _teams.GetByIdAsync(dto.TeamId, cancellationToken);
         if (entity == null)
         {
-            return Result<TeamDto>.Failure("Team not found.");
+            return Result<TeamDto>.Failure("الفريق غير موجود. / Team not found.");
         }
 
         if (dto.SupervisorId.HasValue && dto.SupervisorId.Value > 0 && entity.SupervisorId != dto.SupervisorId)
@@ -103,7 +103,7 @@ public class TeamService : ITeamService
         var entity = await _teams.GetByIdAsync(id, cancellationToken);
         if (entity == null)
         {
-            return Result.Failure("Team not found.");
+            return Result.Failure("الفريق غير موجود. / Team not found.");
         }
 
         await _teams.DeleteAsync(entity, cancellationToken);
@@ -116,7 +116,7 @@ public class TeamService : ITeamService
         if (authCheck.IsFailure) return Result<TeamDto>.Failure(authCheck.Message);
 
         var entity = await _teams.GetByIdAsync(teamId, cancellationToken);
-        if (entity == null) return Result<TeamDto>.Failure("Team not found.");
+        if (entity == null) return Result<TeamDto>.Failure("الفريق غير موجود. / Team not found.");
 
         if (supervisorId.HasValue && supervisorId.Value > 0)
         {
@@ -135,7 +135,7 @@ public class TeamService : ITeamService
         if (authCheck.IsFailure) return Result<TeamDto>.Failure(authCheck.Message);
 
         var entity = await _teams.GetByIdAsync(teamId, cancellationToken);
-        if (entity == null) return Result<TeamDto>.Failure("Team not found.");
+        if (entity == null) return Result<TeamDto>.Failure("الفريق غير موجود. / Team not found.");
 
         entity.CommitteeId = committeeId;
         await _teams.UpdateAsync(entity, cancellationToken);
@@ -144,10 +144,10 @@ public class TeamService : ITeamService
 
     private Result EnsureAuthorized(params UserRole[] allowedRoles)
     {
-        if (!_currentUser.IsAuthenticated) return Result.Failure("User is not authenticated.");
+        if (!_currentUser.IsAuthenticated) return Result.Failure("المستخدم غير مسجل الدخول. / User is not authenticated.");
         if (allowedRoles.Any() && !allowedRoles.Contains(_currentUser.Role ?? UserRole.Student))
         {
-            return Result.Failure("User is not authorized to perform this operation.");
+            return Result.Failure("ليس لديك صلاحية لتنفيذ هذه العملية. / User is not authorized to perform this operation.");
         }
         return Result.Success();
     }
@@ -155,7 +155,7 @@ public class TeamService : ITeamService
     private async Task<Result> EnsureSupervisionCapacity(int supervisorId, CancellationToken cancellationToken)
     {
         var doctor = await _doctors.GetByIdAsync(supervisorId, cancellationToken);
-        if (doctor == null) return Result.Failure("Supervisor not found.");
+        if (doctor == null) return Result.Failure("المشرف غير موجود. / Supervisor not found.");
 
         if (doctor.MaxSupervisionCount <= 0) return Result.Success();
 

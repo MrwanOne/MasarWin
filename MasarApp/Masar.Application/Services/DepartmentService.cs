@@ -56,7 +56,7 @@ public class DepartmentService : IDepartmentService
         var existing = await _departments.GetByNamesAsync(nameAr, nameEn, dto.CollegeId, cancellationToken);
         if (existing != null)
         {
-            return Result<DepartmentDto>.Failure("A department with the same name already exists in this college / اسم القسم موجود بالفعل في نفس الكلية.");
+            return Result<DepartmentDto>.Failure("اسم القسم موجود بالفعل في نفس الكلية. / A department with the same name already exists in this college.");
         }
 
         var entity = new Domain.Entities.Department
@@ -87,12 +87,12 @@ public class DepartmentService : IDepartmentService
         if (collegeCheck.IsFailure) return Result<DepartmentDto>.Failure(collegeCheck.Message);
 
         var entity = await _departments.GetWithCollegeAsync(dto.DepartmentId, cancellationToken);
-        if (entity == null) return Result<DepartmentDto>.Failure("Department not found.");
+        if (entity == null) return Result<DepartmentDto>.Failure("القسم غير موجود. / Department not found.");
 
         var duplicate = await _departments.GetByNamesAsync(nameAr, nameEn, dto.CollegeId, cancellationToken);
         if (duplicate != null && duplicate.DepartmentId != entity.DepartmentId)
         {
-            return Result<DepartmentDto>.Failure("A department with the same name already exists in this college / اسم القسم موجود بالفعل في نفس الكلية.");
+            return Result<DepartmentDto>.Failure("اسم القسم موجود بالفعل في نفس الكلية. / A department with the same name already exists in this college.");
         }
 
         entity.NameAr = nameAr;
@@ -103,10 +103,10 @@ public class DepartmentService : IDepartmentService
         if (dto.HeadOfDepartmentId.HasValue)
         {
             var head = await _doctors.GetWithDepartmentAsync(dto.HeadOfDepartmentId.Value, cancellationToken);
-            if (head == null) return Result<DepartmentDto>.Failure("Head of department not found.");
+            if (head == null) return Result<DepartmentDto>.Failure("رئيس القسم غير موجود. / Head of department not found.");
             if (head.DepartmentId != entity.DepartmentId)
             {
-                return Result<DepartmentDto>.Failure("Head of department must belong to the same department.");
+                return Result<DepartmentDto>.Failure("يجب أن ينتمي رئيس القسم إلى نفس القسم. / Head of department must belong to the same department.");
             }
             entity.HeadOfDepartmentId = dto.HeadOfDepartmentId;
         }
@@ -126,7 +126,7 @@ public class DepartmentService : IDepartmentService
         if (authCheck.IsFailure) return authCheck;
 
         var entity = await _departments.GetWithCollegeAsync(id, cancellationToken);
-        if (entity == null) return Result.Failure("Department not found.");
+        if (entity == null) return Result.Failure("القسم غير موجود. / Department not found.");
 
         await _departments.DeleteAsync(entity, cancellationToken);
         return Result.Success();
@@ -175,7 +175,7 @@ public class DepartmentService : IDepartmentService
 
         if (string.IsNullOrWhiteSpace(nameAr))
         {
-            return Result<(string, string)>.Failure("Department Arabic name is required / اسم القسم بالعربية مطلوب.");
+            return Result<(string, string)>.Failure("اسم القسم بالعربية مطلوب. / Department Arabic name is required.");
         }
 
         return Result<(string, string)>.Success((nameAr, nameEn));
@@ -184,16 +184,16 @@ public class DepartmentService : IDepartmentService
     private async Task<Result> EnsureCollegeExists(int collegeId, CancellationToken cancellationToken)
     {
         var college = await _colleges.GetByIdAsync(collegeId, cancellationToken);
-        if (college == null) return Result.Failure("College not found.");
+        if (college == null) return Result.Failure("الكلية غير موجودة. / College not found.");
         return Result.Success();
     }
 
     private Result EnsureAuthorized(params UserRole[] allowedRoles)
     {
-        if (!_currentUser.IsAuthenticated) return Result.Failure("User is not authenticated.");
+        if (!_currentUser.IsAuthenticated) return Result.Failure("المستخدم غير مسجل الدخول. / User is not authenticated.");
         if (allowedRoles.Any() && !allowedRoles.Contains(_currentUser.Role ?? UserRole.Student))
         {
-            return Result.Failure("User is not authorized to perform this operation.");
+            return Result.Failure("ليس لديك صلاحية لتنفيذ هذه العملية. / User is not authorized to perform this operation.");
         }
         return Result.Success();
     }

@@ -63,7 +63,7 @@ public class AcademicTermService : IAcademicTermService
     public async Task<AcademicTermDto> UpdateAsync(AcademicTermDto dto, CancellationToken cancellationToken = default)
     {
         var entity = await _repository.GetByIdAsync(dto.TermId, cancellationToken);
-        if (entity == null) throw new InvalidOperationException("Academic term not found.");
+        if (entity == null) throw new InvalidOperationException("الفصل الدراسي غير موجود. / Academic term not found.");
 
         entity.Year = dto.Year;
         entity.Semester = dto.Semester;

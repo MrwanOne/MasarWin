@@ -48,13 +48,13 @@ public class StudentEvaluationService : IStudentEvaluationService
     public async Task<Result<StudentEvaluationDto>> AddAsync(StudentEvaluationDto dto, CancellationToken cancellationToken = default)
     {
         if (!_currentUser.IsAuthenticated)
-            return Result<StudentEvaluationDto>.Failure("User is not authenticated.");
+            return Result<StudentEvaluationDto>.Failure("المستخدم غير مسجل الدخول. / User is not authenticated.");
 
         if (_currentUser.Role != UserRole.Admin && _currentUser.Role != UserRole.HeadOfDepartment && _currentUser.Role != UserRole.Supervisor)
-            return Result<StudentEvaluationDto>.Failure("User is not authorized to add evaluations.");
+            return Result<StudentEvaluationDto>.Failure("ليس لديك صلاحية إضافة تقييمات. / User is not authorized to add evaluations.");
 
         if (await _evaluations.ExistsAsync(dto.DiscussionId, dto.StudentId, cancellationToken))
-            return Result<StudentEvaluationDto>.Failure("Student already has an evaluation for this discussion.");
+            return Result<StudentEvaluationDto>.Failure("لدى الطالب تقييم سابق لهذه المناقشة. / Student already has an evaluation for this discussion.");
 
         var entity = new StudentEvaluation
         {
@@ -83,11 +83,11 @@ public class StudentEvaluationService : IStudentEvaluationService
     public async Task<Result<StudentEvaluationDto>> UpdateAsync(StudentEvaluationDto dto, CancellationToken cancellationToken = default)
     {
         if (!_currentUser.IsAuthenticated)
-            return Result<StudentEvaluationDto>.Failure("User is not authenticated.");
+            return Result<StudentEvaluationDto>.Failure("المستخدم غير مسجل الدخول. / User is not authenticated.");
 
         var entity = await _evaluations.GetWithScoresAsync(dto.EvaluationId, cancellationToken);
         if (entity == null)
-            return Result<StudentEvaluationDto>.Failure("Evaluation not found.");
+            return Result<StudentEvaluationDto>.Failure("التقييم غير موجود. / Evaluation not found.");
 
         entity.TotalScore = dto.TotalScore;
         entity.ContributionPercentage = dto.ContributionPercentage;
@@ -116,11 +116,11 @@ public class StudentEvaluationService : IStudentEvaluationService
     public async Task<Result> DeleteAsync(int evaluationId, CancellationToken cancellationToken = default)
     {
         if (!_currentUser.IsAuthenticated)
-            return Result.Failure("User is not authenticated.");
+            return Result.Failure("المستخدم غير مسجل الدخول. / User is not authenticated.");
 
         var entity = await _evaluations.GetByIdAsync(evaluationId, cancellationToken);
         if (entity == null)
-            return Result.Failure("Evaluation not found.");
+            return Result.Failure("التقييم غير موجود. / Evaluation not found.");
 
         await _evaluations.DeleteAsync(entity, cancellationToken);
         return Result.Success();

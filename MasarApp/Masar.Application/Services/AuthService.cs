@@ -1,4 +1,4 @@
-﻿using Masar.Application.Common;
+using Masar.Application.Common;
 using Masar.Application.DTOs;
 using Masar.Application.Interfaces;
 using System.Threading;
@@ -21,24 +21,24 @@ public class AuthService : IAuthService
     {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
-            return Result<UserDto>.Failure("Username and password are required.");
+            return Result<UserDto>.Failure("اسم المستخدم وكلمة المرور مطلوبان. / Username and password are required.");
         }
 
         var user = await _users.GetByUsernameAsync(username.Trim(), cancellationToken);
         if (user == null)
         {
-            return Result<UserDto>.Failure("Invalid username or password.");
+            return Result<UserDto>.Failure("اسم المستخدم أو كلمة المرور غير صحيحة. / Invalid username or password.");
         }
 
         if (!user.IsActive)
         {
-            return Result<UserDto>.Failure("User account is inactive.");
+            return Result<UserDto>.Failure("حساب المستخدم غير نشط. / User account is inactive.");
         }
 
         var valid = _passwordHasher.Verify(password, user.PasswordHash, user.PasswordSalt);
         if (!valid)
         {
-            return Result<UserDto>.Failure("Invalid username or password.");
+            return Result<UserDto>.Failure("اسم المستخدم أو كلمة المرور غير صحيحة. / Invalid username or password.");
         }
 
         return Result<UserDto>.Success(user.ToDto());
