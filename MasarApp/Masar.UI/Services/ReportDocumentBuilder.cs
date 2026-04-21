@@ -21,11 +21,11 @@ public class ReportDocumentBuilder
         
         var document = new FlowDocument
         {
-            PageWidth = 1200,
-            ColumnWidth = 1200,
+            PageWidth = 1050,
+            ColumnWidth = double.PositiveInfinity,
             FontFamily = new FontFamily("Segoe UI"),
             FontSize = 12,
-            PagePadding = new Thickness(40)
+            PagePadding = new Thickness(16)
         };
         if (System.Windows.Application.Current.Resources["AppFlowDirection"] is FlowDirection flowDirection)
         {
@@ -64,13 +64,13 @@ public class ReportDocumentBuilder
             BorderThickness = new Thickness(1)
         };
 
-        table.Columns.Add(new TableColumn { Width = new GridLength(200) }); // العنوان
-        table.Columns.Add(new TableColumn { Width = new GridLength(140) }); // الفريق
-        table.Columns.Add(new TableColumn { Width = new GridLength(160) }); // المشرف
-        table.Columns.Add(new TableColumn { Width = new GridLength(160) }); // القسم
-        table.Columns.Add(new TableColumn { Width = new GridLength(80) });  // السنة
-        table.Columns.Add(new TableColumn { Width = new GridLength(120) }); // الحالة
-        table.Columns.Add(new TableColumn { Width = new GridLength(100) }); // الإنجاز
+        table.Columns.Add(new TableColumn { Width = new GridLength(2, GridUnitType.Star) }); // العنوان
+        table.Columns.Add(new TableColumn { Width = new GridLength(1.2, GridUnitType.Star) }); // الفريق
+        table.Columns.Add(new TableColumn { Width = new GridLength(1.5, GridUnitType.Star) }); // المشرف
+        table.Columns.Add(new TableColumn { Width = new GridLength(1.5, GridUnitType.Star) }); // القسم
+        table.Columns.Add(new TableColumn { Width = new GridLength(0.7, GridUnitType.Star) }); // السنة
+        table.Columns.Add(new TableColumn { Width = new GridLength(1, GridUnitType.Star) }); // الحالة
+        table.Columns.Add(new TableColumn { Width = new GridLength(0.9, GridUnitType.Star) }); // الإنجاز
 
         var headerGroup = new TableRowGroup();
         var headerRow = new TableRow();
