@@ -96,7 +96,7 @@ public class StudentsViewModel : PagedViewModel<StudentDto>
         {
             // Load departments for filter
             Departments.Clear();
-            var placeholder = new DepartmentDto { DepartmentId = 0, NameAr = _localizationService.GetString("Placeholder.AllDepartments") };
+            var placeholder = new DepartmentDto { DepartmentId = 0, NameAr = _localizationService.GetString("Placeholder.AllDepartments"), NameEn = "All Departments" };
             Departments.Add(placeholder);
 
             var departments = await _departmentService.GetAllAsync();
@@ -104,6 +104,9 @@ public class StudentsViewModel : PagedViewModel<StudentDto>
             {
                 Departments.Add(dept);
             }
+
+            _selectedDepartmentId = 0;
+            OnPropertyChanged(nameof(SelectedDepartmentId));
 
             // Load all students
             _allStudents = await _studentService.GetAllAsync();

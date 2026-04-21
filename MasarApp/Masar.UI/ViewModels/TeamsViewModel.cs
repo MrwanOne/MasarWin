@@ -94,7 +94,7 @@ public class TeamsViewModel : PagedViewModel<TeamDto>
         {
             // Load departments for filter
             Departments.Clear();
-            var placeholder = new DepartmentDto { DepartmentId = 0, NameAr = _localizationService.GetString("Placeholder.AllDepartments") };
+            var placeholder = new DepartmentDto { DepartmentId = 0, NameAr = _localizationService.GetString("Placeholder.AllDepartments"), NameEn = "All Departments" };
             Departments.Add(placeholder);
 
             var departments = await _departmentService.GetAllAsync();
@@ -102,6 +102,10 @@ public class TeamsViewModel : PagedViewModel<TeamDto>
             {
                 Departments.Add(dept);
             }
+
+            // إشعار WPF بإعادة تحديد "الكل" بعد إعادة بناء القائمة
+            _selectedDepartmentId = 0;
+            OnPropertyChanged(nameof(SelectedDepartmentId));
 
             // Load all teams
             _allTeams = await _teamService.GetAllAsync();
