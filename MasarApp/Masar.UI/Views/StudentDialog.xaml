@@ -1,7 +1,7 @@
 <Window x:Class="Masar.UI.Views.StudentDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="{DynamicResource Title.Student}" Height="620" Width="640" WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False">
+        Title="{DynamicResource Title.Student}" Height="640" Width="640" WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False">
     <Border Style="{StaticResource CardStyle}" Margin="16">
         <Grid>
             <Grid.RowDefinitions>
@@ -12,106 +12,108 @@
 
             <TextBlock Text="{DynamicResource Title.StudentDetails}" FontSize="18" FontWeight="SemiBold" />
 
-            <Grid Grid.Row="1" Margin="0,12,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,12,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-                <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,0,12,0">
-                    <TextBlock Text="{DynamicResource Label.College}" />
-                    <ComboBox ItemsSource="{Binding Colleges}"  SelectedValuePath="CollegeId" SelectedValue="{Binding SelectedCollegeId}" >
+                    <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,0,12,12">
+                        <TextBlock Text="{DynamicResource Label.College}" />
+                        <ComboBox ItemsSource="{Binding Colleges}" SelectedValuePath="CollegeId" SelectedValue="{Binding SelectedCollegeId}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding ., Converter={StaticResource LocalizedNameConverter}}" />
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-                </StackPanel>
+                    </StackPanel>
 
-                <StackPanel Grid.Column="1" Grid.Row="0">
-                    <TextBlock Text="{DynamicResource Label.StudentNumber}" />
-                    <TextBox Text="{Binding Student.StudentNumber}" />
-                </StackPanel>
+                    <StackPanel Grid.Column="1" Grid.Row="0" Margin="0,0,0,12">
+                        <TextBlock Text="{DynamicResource Label.StudentNumber}" />
+                        <TextBox Text="{Binding Student.StudentNumber}" />
+                    </StackPanel>
 
-                <StackPanel Grid.Column="0" Grid.Row="1" Margin="0,0,12,0">
-                    <TextBlock Text="{DynamicResource Label.FullName}" />
-                    <TextBox Text="{Binding Student.FullName}" />
-                </StackPanel>
+                    <StackPanel Grid.Column="0" Grid.Row="1" Margin="0,0,12,12">
+                        <TextBlock Text="{DynamicResource Label.FullName}" />
+                        <TextBox Text="{Binding Student.FullName}" />
+                    </StackPanel>
 
-                <StackPanel Grid.Column="1" Grid.Row="1">
-                    <TextBlock Text="{DynamicResource Label.EnrollmentYear}" />
-                    <TextBox Text="{Binding Student.EnrollmentYear}" />
-                </StackPanel>
+                    <StackPanel Grid.Column="1" Grid.Row="1" Margin="0,0,0,12">
+                        <TextBlock Text="{DynamicResource Label.EnrollmentYear}" />
+                        <TextBox Text="{Binding Student.EnrollmentYear}" />
+                    </StackPanel>
 
-                <StackPanel Grid.Column="0" Grid.Row="2" Margin="0,0,12,0">
-                    <TextBlock Text="{DynamicResource Label.Email}" />
-                    <TextBox Text="{Binding Student.Email}" />
-                </StackPanel>
+                    <StackPanel Grid.Column="0" Grid.Row="2" Margin="0,0,12,12">
+                        <TextBlock Text="{DynamicResource Label.Email}" />
+                        <TextBox Text="{Binding Student.Email}" />
+                    </StackPanel>
 
-                <StackPanel Grid.Column="1" Grid.Row="2">
-                    <TextBlock Text="{DynamicResource Label.Phone}" />
-                    <TextBox Text="{Binding Student.Phone}" />
-                </StackPanel>
+                    <StackPanel Grid.Column="1" Grid.Row="2" Margin="0,0,0,12">
+                        <TextBlock Text="{DynamicResource Label.Phone}" />
+                        <TextBox Text="{Binding Student.Phone}" />
+                    </StackPanel>
 
-                <StackPanel Grid.Column="0" Grid.Row="3" Margin="0,0,12,0">
-                    <TextBlock Text="{DynamicResource Label.Department}" />
-                    <ComboBox ItemsSource="{Binding Departments}"  SelectedValuePath="DepartmentId" SelectedValue="{Binding Student.DepartmentId}" >
+                    <StackPanel Grid.Column="0" Grid.Row="3" Margin="0,0,12,12">
+                        <TextBlock Text="{DynamicResource Label.Department}" />
+                        <ComboBox ItemsSource="{Binding Departments}" SelectedValuePath="DepartmentId" SelectedValue="{Binding Student.DepartmentId}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding ., Converter={StaticResource LocalizedNameConverter}}" />
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-                </StackPanel>
+                    </StackPanel>
 
-                <StackPanel Grid.Column="1" Grid.Row="3">
-                    <TextBlock Text="{DynamicResource Label.Team}" />
-                    <ComboBox ItemsSource="{Binding Teams}" SelectedValuePath="TeamId" SelectedValue="{Binding Student.TeamId}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock>
-                                    <TextBlock.Text>
-                                        <PriorityBinding>
-                                            <Binding Path="ProjectTitle" />
-                                            <Binding Path="Name" />
-                                        </PriorityBinding>
-                                    </TextBlock.Text>
-                                </TextBlock>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
+                    <StackPanel Grid.Column="1" Grid.Row="3" Margin="0,0,0,12">
+                        <TextBlock Text="{DynamicResource Label.Team}" />
+                        <ComboBox ItemsSource="{Binding Teams}" SelectedValuePath="TeamId" SelectedValue="{Binding Student.TeamId}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock>
+                                        <TextBlock.Text>
+                                            <PriorityBinding>
+                                                <Binding Path="ProjectTitle" />
+                                                <Binding Path="Name" />
+                                            </PriorityBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
 
-                <StackPanel Grid.Column="0" Grid.Row="4" Margin="0,0,12,0">
-                    <TextBlock Text="{DynamicResource Label.Gender}" />
-                    <ComboBox ItemsSource="{Binding Genders}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding SelectedGender}" />
-                </StackPanel>
+                    <StackPanel Grid.Column="0" Grid.Row="4" Margin="0,0,12,12">
+                        <TextBlock Text="{DynamicResource Label.Gender}" />
+                        <ComboBox ItemsSource="{Binding Genders}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding SelectedGender}" />
+                    </StackPanel>
 
-                <StackPanel Grid.Column="1" Grid.Row="4">
-                    <TextBlock Text="{DynamicResource Label.Status}" />
-                    <ComboBox ItemsSource="{Binding StatusOptions}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding SelectedStatus}" />
-                </StackPanel>
+                    <StackPanel Grid.Column="1" Grid.Row="4" Margin="0,0,0,12">
+                        <TextBlock Text="{DynamicResource Label.Status}" />
+                        <ComboBox ItemsSource="{Binding StatusOptions}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding SelectedStatus}" />
+                    </StackPanel>
 
-                <StackPanel Grid.Column="0" Grid.Row="5" Margin="0,0,12,0">
-                    <TextBlock Text="{DynamicResource Label.GPA}" />
-                    <TextBox Text="{Binding Student.GPA}" />
-                </StackPanel>
+                    <StackPanel Grid.Column="0" Grid.Row="5" Margin="0,0,12,8">
+                        <TextBlock Text="{DynamicResource Label.GPA}" />
+                        <TextBox Text="{Binding Student.GPA}" />
+                    </StackPanel>
 
-                <StackPanel Grid.Column="1" Grid.Row="5">
-                    <TextBlock Text="{DynamicResource Label.Level}" />
-                    <TextBox Text="{Binding Student.Level}" />
-                </StackPanel>
-            </Grid>
+                    <StackPanel Grid.Column="1" Grid.Row="5" Margin="0,0,0,8">
+                        <TextBlock Text="{DynamicResource Label.Level}" />
+                        <TextBox Text="{Binding Student.Level}" />
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
 
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
                 <Button Content="{DynamicResource Button.Save}" Command="{Binding SaveCommand}" Margin="0,0,8,0" />

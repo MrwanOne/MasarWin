@@ -44,7 +44,7 @@ public class DoctorsViewModel : PagedViewModel<DoctorDto>
         {
             if (SetProperty(ref _selectedDepartmentId, value))
             {
-                _ = LoadDoctorsForDepartmentAsync();
+                _ = LoadDoctorsAsync();
             }
         }
     }
@@ -109,40 +109,42 @@ public class DoctorsViewModel : PagedViewModel<DoctorDto>
                 // HoD: Load only their department's doctors
                 var doctors = await _doctorService.GetAllAsync();
                 var hodDoctor = doctors.FirstOrDefault(d => d.DoctorId == currentUser.DoctorId.Value);
-                
+
                 if (hodDoctor != null)
                 {
-                    // Store HoD's department and college for later use
                     _hodDepartmentId = hodDoctor.DepartmentId;
                     _hodCollegeId = hodDoctor.CollegeId;
 
-                    // Load only doctors from this department
                     var deptDoctors = doctors.Where(d => d.DepartmentId == hodDoctor.DepartmentId);
                     SetItems(deptDoctors.OrderBy(d => d.FullName));
 
-                    // Clear filters for HoD (they only see their department)
                     Colleges.Clear();
                     Departments.Clear();
                 }
             }
             else
             {
-                // Admin: Load all colleges and departments
+                // Admin: Load all colleges for filter
                 Colleges.Clear();
-                var allCollegesPlaceholder = new CollegeDto { CollegeId = 0, NameAr = _localizationService.GetString("Placeholder.AllColleges"), NameEn = "All Colleges" };
+                var allCollegesPlaceholder = new CollegeDto
+                {
+                    CollegeId = 0,
+                    NameAr = _localizationService.GetString("Placeholder.AllColleges"),
+                    NameEn = "All Colleges"
+                };
                 Colleges.Add(allCollegesPlaceholder);
                 var colleges = await _collegeService.GetAllAsync();
                 foreach (var college in colleges.OrderBy(c => c.NameAr))
-                {
                     Colleges.Add(college);
-                }
 
+                // Reset filters and load all departments + all doctors
                 _selectedCollegeId = 0;
                 OnPropertyChanged(nameof(SelectedCollegeId));
 
-                // Load departments (all) and all doctors explicitly
                 await LoadDepartmentsForCollegeAsync();
-                await LoadDoctorsForDepartmentAsync();
+                // LoadDepartmentsForCollegeAsync sets _selectedDepartmentId = 0 which would trigger
+                // LoadDoctorsAsync, but we call it explicitly to be sure
+                await LoadDoctorsAsync();
             }
         }
         catch (System.Exception ex)
@@ -163,20 +165,30 @@ public class DoctorsViewModel : PagedViewModel<DoctorDto>
         try
         {
             Departments.Clear();
-            var allDeptsPlaceholder = new DepartmentDto { DepartmentId = 0, NameAr = _localizationService.GetString("Placeholder.AllDepartments"), NameEn = "All Departments" };
+            var allDeptsPlaceholder = new DepartmentDto
+            {
+                DepartmentId = 0,
+                NameAr = _localizationService.GetString("Placeholder.AllDepartments"),
+                NameEn = "All Departments"
+            };
             Departments.Add(allDeptsPlaceholder);
 
-            if (SelectedCollegeId > 0)
-            {
-                var departments = await _departmentService.GetAllAsync();
-                var filtered = departments.Where(d => d.CollegeId == SelectedCollegeId).OrderBy(d => d.NameAr);
-                foreach (var dept in filtered)
-                {
-                    Departments.Add(dept);
-                }
-            }
+            var departments = await _departmentService.GetAllAsync();
 
-            SelectedDepartmentId = 0; // Show all departments
+            // If a specific college is selected, show only its departments; otherwise show all
+            var filtered = SelectedCollegeId > 0
+                ? departments.Where(d => d.CollegeId == SelectedCollegeId).OrderBy(d => d.NameAr)
+                : departments.OrderBy(d => d.CollegeId).ThenBy(d => d.NameAr);
+
+            foreach (var dept in filtered)
+                Departments.Add(dept);
+
+            // Reset department selection (use backing field to avoid re-triggering LoadDoctorsAsync here)
+            _selectedDepartmentId = 0;
+            OnPropertyChanged(nameof(SelectedDepartmentId));
+
+            // Reload doctors based on new college/department selection
+            await LoadDoctorsAsync();
         }
         catch (System.Exception ex)
         {
@@ -184,24 +196,18 @@ public class DoctorsViewModel : PagedViewModel<DoctorDto>
         }
     }
 
-    private async Task LoadDoctorsForDepartmentAsync()
+    private async Task LoadDoctorsAsync()
     {
         try
         {
             var doctors = await _doctorService.GetAllAsync();
             var filtered = doctors.AsEnumerable();
 
-            // Filter by college if selected
             if (SelectedCollegeId > 0)
-            {
                 filtered = filtered.Where(d => d.CollegeId == SelectedCollegeId);
-            }
 
-            // Filter by department if selected
             if (SelectedDepartmentId > 0)
-            {
                 filtered = filtered.Where(d => d.DepartmentId == SelectedDepartmentId);
-            }
 
             SetItems(filtered.OrderBy(d => d.FullName));
         }
@@ -223,57 +229,40 @@ public class DoctorsViewModel : PagedViewModel<DoctorDto>
     private void AddDoctor()
     {
         var vm = new DoctorEditViewModel(_doctorService, _collegeService, _departmentService, _dialogService, _localizationService);
-        
-        // If HoD, pre-select their department and college
+
         if (_hodDepartmentId.HasValue && _hodCollegeId.HasValue)
-        {
             vm.SetHeadOfDepartmentContext(_hodCollegeId.Value, _hodDepartmentId.Value);
-        }
-        
+
         var dialog = new DoctorDialog(vm);
         _ = vm.LoadAsync();
         var result = _dialogService.ShowDialog(dialog);
         if (result == true)
-        {
             _ = LoadAsync();
-        }
     }
 
     private void EditDoctor()
     {
-        if (SelectedDoctor == null)
-        {
-            return;
-        }
+        if (SelectedDoctor == null) return;
 
         var vm = new DoctorEditViewModel(_doctorService, _collegeService, _departmentService, _dialogService, _localizationService, SelectedDoctor);
         var dialog = new DoctorDialog(vm);
         _ = vm.LoadAsync();
         var result = _dialogService.ShowDialog(dialog);
         if (result == true)
-        {
             _ = LoadAsync();
-        }
     }
 
     private async void DeleteDoctor()
     {
-        if (SelectedDoctor == null)
-        {
-            return;
-        }
+        if (SelectedDoctor == null) return;
 
         if (_dialogService.Confirm(_localizationService.GetString("Confirm.DeleteDoctor"), _localizationService.GetString("Title.Doctors")))
         {
             var result = await _doctorService.DeleteAsync(SelectedDoctor.DoctorId);
             if (result.IsSuccess)
-            {
                 await LoadAsync();
-            }
             else
-            {
                 _dialogService.ShowError(result.Message, _localizationService.GetString("Title.Doctors"));
-            }
         }
     }
 
@@ -283,7 +272,7 @@ public class DoctorsViewModel : PagedViewModel<DoctorDto>
 
         try
         {
-            // Check if doctor is already HOD of any department
+            // Check if doctor is already HOD
             if (SelectedDoctor.IsHeadOfDepartment)
             {
                 var confirmChange = _dialogService.Confirm(
@@ -291,13 +280,16 @@ public class DoctorsViewModel : PagedViewModel<DoctorDto>
                         ? $"{SelectedDoctor.FullName} هو بالفعل رئيس قسم. هل تريد تعيينه رئيساً لقسم آخر؟\n(سيتم إلغاء تعيينه من القسم الحالي)"
                         : $"{SelectedDoctor.FullName} is already HOD. Do you want to assign to a different department?\n(Current HOD status will be removed)",
                     _localizationService.GetString("Title.Doctors"));
-                
+
                 if (!confirmChange) return;
             }
 
             // Get all departments in the doctor's college
-            var departments = await _departmentService.GetAllAsync();
-            var collegeDepts = departments.Where(d => d.CollegeId == SelectedDoctor.CollegeId).ToList();
+            var allDepartments = await _departmentService.GetAllAsync();
+            var collegeDepts = allDepartments
+                .Where(d => d.CollegeId == SelectedDoctor.CollegeId)
+                .OrderBy(d => d.NameAr)
+                .ToList();
 
             if (!collegeDepts.Any())
             {
@@ -307,53 +299,32 @@ public class DoctorsViewModel : PagedViewModel<DoctorDto>
                 return;
             }
 
-            // Show selection dialog with HOD status
-            var deptList = collegeDepts.Select((d, i) =>
+            // Show a department-picker dialog (ComboBox-based)
+            var pickerVm = new DepartmentPickerViewModel(
+                _localizationService,
+                SelectedDoctor,
+                collegeDepts);
+
+            var pickerDialog = new DepartmentPickerDialog(pickerVm);
+            if (_dialogService.ShowDialog(pickerDialog) != true) return;
+
+            var selectedDept = pickerVm.SelectedDepartment;
+            if (selectedDept == null) return;
+
+            var result = await _departmentService.SetHeadOfDepartmentAsync(selectedDept.DepartmentId, SelectedDoctor.DoctorId);
+
+            if (result.IsSuccess)
             {
-                var hodInfo = d.HeadOfDepartmentId.HasValue 
-                    ? (_localizationService.IsArabic ? $" (رئيسه: {d.HeadOfDepartmentName})" : $" (HOD: {d.HeadOfDepartmentName})")
-                    : (_localizationService.IsArabic ? " (لا يوجد رئيس)" : " (No HOD)");
-                return $"{i + 1}. {(_localizationService.IsArabic ? d.NameAr : d.NameEn)}{hodInfo}";
-            });
-            
-            var deptNames = string.Join("\n", deptList);
-            var message = _localizationService.IsArabic
-                ? $"اختر رقم القسم لتعيين {SelectedDoctor.FullName} كرئيس له:\n\n{deptNames}\n\nأدخل الرقم:"
-                : $"Select department number to set {SelectedDoctor.FullName} as HOD:\n\n{deptNames}\n\nEnter number:";
-
-            var inputVm = new InputDialogViewModel(_localizationService.GetString("Title.Doctors"), message);
-            var inputDialog = new InputDialogWindow(inputVm);
-            if (_dialogService.ShowDialog(inputDialog) != true) return;
-            var input = inputVm.InputText;
-
-            if (string.IsNullOrWhiteSpace(input)) return;
-
-            if (int.TryParse(input, out int selection) && selection > 0 && selection <= collegeDepts.Count)
-            {
-                var selectedDept = collegeDepts[selection - 1];
-                
-                // SetHeadOfDepartmentAsync already handles the confirmation if department has existing HOD
-                var result = await _departmentService.SetHeadOfDepartmentAsync(selectedDept.DepartmentId, SelectedDoctor.DoctorId);
-                
-                if (result.IsSuccess)
-                {
-                    _dialogService.ShowMessage(
-                        _localizationService.IsArabic 
-                            ? $"تم تعيين {SelectedDoctor.FullName} كرئيس لقسم {selectedDept.NameAr}" 
-                            : $"{SelectedDoctor.FullName} set as HOD of {selectedDept.NameEn}",
-                        _localizationService.GetString("Title.Doctors"));
-                    await LoadAsync();
-                }
-                else
-                {
-                    _dialogService.ShowError(result.Message, _localizationService.GetString("Title.Doctors"));
-                }
+                _dialogService.ShowMessage(
+                    _localizationService.IsArabic
+                        ? $"تم تعيين {SelectedDoctor.FullName} كرئيس لقسم {selectedDept.NameAr}"
+                        : $"{SelectedDoctor.FullName} set as HOD of {selectedDept.NameEn}",
+                    _localizationService.GetString("Title.Doctors"));
+                await LoadAsync();
             }
             else
             {
-                _dialogService.ShowError(
-                    _localizationService.IsArabic ? "رقم غير صحيح" : "Invalid number",
-                    _localizationService.GetString("Title.Doctors"));
+                _dialogService.ShowError(result.Message, _localizationService.GetString("Title.Doctors"));
             }
         }
         catch (System.Exception ex)
