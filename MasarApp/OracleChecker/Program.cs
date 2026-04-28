@@ -1,29 +1,28 @@
-namespace Masar.Infrastructure.Seed;
+using System;
+using System.Data;
+using Oracle.ManagedDataAccess.Client;
 
-internal static class SqlScripts
+class Program
 {
-    // ═══════════════════════════════════════════════════════════════
-    // FUNCTIONS
-    // ═══════════════════════════════════════════════════════════════
-
-    /// <summary>
-    /// تحسب الدرجة النهائية كمتوسط درجة المشرف ودرجة اللجنة.
-    /// تُستخدم داخل SP_SAVE_EVALUATION وTRG_CALC_FINAL_SCORE.
-    /// </summary>
-    public const string FN_CALC_FINAL_SCORE = @"
-CREATE OR REPLACE FUNCTION FN_CALC_FINAL_SCORE(
+    static void Main()
+    {
+        string connStr = "User Id=MASAR;Password=masar;Data Source=192.168.56.101:1521/freepdb1";
+        using var conn = new OracleConnection(connStr);
+        try
+        {
+            conn.Open();
+            Console.WriteLine("Connected!");
+            
+            string[] scripts = new string[] {
+                @"CREATE OR REPLACE FUNCTION FN_CALC_FINAL_SCORE(
     p_supervisor_score IN NUMBER,
     p_committee_score  IN NUMBER
 ) RETURN NUMBER AS
 BEGIN
     RETURN ROUND((p_supervisor_score + p_committee_score) / 2, 2);
-END FN_CALC_FINAL_SCORE;";
+END FN_CALC_FINAL_SCORE;",
 
-    /// <summary>
-    /// تُرجع عدد المشاريع النشطة التي يشرف عليها الدكتور.
-    /// </summary>
-    public const string FN_GET_SUPERVISOR_PROJECT_COUNT = @"
-CREATE OR REPLACE FUNCTION FN_GET_SUPERVISOR_PROJECT_COUNT(
+                @"CREATE OR REPLACE FUNCTION FN_GET_SUPERVISOR_PROJECT_COUNT(
     p_supervisor_id IN NUMBER
 ) RETURN NUMBER AS
     v_count NUMBER;
@@ -34,14 +33,9 @@ BEGIN
       AND ""is_deleted""    = 0
       AND ""status""        NOT IN (3, 4); -- تجاهل المكتملة (3) والمرفوضة (4)
     RETURN v_count;
-END FN_GET_SUPERVISOR_PROJECT_COUNT;";
+END FN_GET_SUPERVISOR_PROJECT_COUNT;",
 
-    /// <summary>
-    /// تتحقق إن كان دكتور معين عضواً في لجنة معينة.
-    /// تُرجع 1 إذا كان عضواً (تعارض)، 0 إذا لم يكن.
-    /// </summary>
-    public const string FN_SUPERVISOR_IS_COMMITTEE_MEMBER = @"
-CREATE OR REPLACE FUNCTION FN_SUPERVISOR_IS_COMMITTEE_MEMBER(
+                @"CREATE OR REPLACE FUNCTION FN_SUPERVISOR_IS_COMMITTEE_MEMBER(
     p_doctor_id    IN NUMBER,
     p_committee_id IN NUMBER
 ) RETURN NUMBER AS
@@ -52,14 +46,9 @@ BEGIN
     WHERE ""doctor_id""    = p_doctor_id
       AND ""committee_id"" = p_committee_id;
     RETURN CASE WHEN v_count > 0 THEN 1 ELSE 0 END;
-END FN_SUPERVISOR_IS_COMMITTEE_MEMBER;";
+END FN_SUPERVISOR_IS_COMMITTEE_MEMBER;",
 
-    /// <summary>
-    /// تُرجع عدد الطلاب النشطين (غير المحذوفين) في قسم معين.
-    /// تُستخدم في واجهة إدارة الأقسام لعرض الإحصائيات.
-    /// </summary>
-    public const string FN_GET_STUDENT_COUNT_BY_DEPT = @"
-CREATE OR REPLACE FUNCTION FN_GET_STUDENT_COUNT_BY_DEPT(
+                @"CREATE OR REPLACE FUNCTION FN_GET_STUDENT_COUNT_BY_DEPT(
     p_department_id IN NUMBER
 ) RETURN NUMBER AS
     v_count NUMBER;
@@ -69,15 +58,9 @@ BEGIN
     WHERE ""department_id"" = p_department_id
       AND ""is_deleted""    = 0;
     RETURN v_count;
-END FN_GET_STUDENT_COUNT_BY_DEPT;";
+END FN_GET_STUDENT_COUNT_BY_DEPT;",
 
-    /// <summary>
-    /// تتحقق إن كان الطالب منتسباً لفريق نشط.
-    /// تُرجع 1 إذا كان لديه فريق، 0 إذا لم يكن.
-    /// تُستخدم في SP_ASSIGN_STUDENT_TO_TEAM لمنع التكرار.
-    /// </summary>
-    public const string FN_STUDENT_HAS_TEAM = @"
-CREATE OR REPLACE FUNCTION FN_STUDENT_HAS_TEAM(
+                @"CREATE OR REPLACE FUNCTION FN_STUDENT_HAS_TEAM(
     p_student_id IN NUMBER
 ) RETURN NUMBER AS
     v_team_id NUMBER;
@@ -89,18 +72,9 @@ BEGIN
     RETURN CASE WHEN v_team_id IS NOT NULL THEN 1 ELSE 0 END;
 EXCEPTION
     WHEN NO_DATA_FOUND THEN RETURN 0;
-END FN_STUDENT_HAS_TEAM;";
+END FN_STUDENT_HAS_TEAM;",
 
-    // ═══════════════════════════════════════════════════════════════
-    // STORED PROCEDURES
-    // ═══════════════════════════════════════════════════════════════
-
-    /// <summary>
-    /// تقبل مشروعاً وتعيّن مشرفاً وتسجل السجل في ProjectStatusHistory.
-    /// p_result_code: 0=نجاح، 1=خطأ.
-    /// </summary>
-    public const string SP_ACCEPT_PROJECT = @"
-CREATE OR REPLACE PROCEDURE SP_ACCEPT_PROJECT(
+                @"CREATE OR REPLACE PROCEDURE SP_ACCEPT_PROJECT(
     p_project_id     IN  ""project"".""project_id""%TYPE,
     p_supervisor_id  IN  ""project"".""supervisor_id""%TYPE,
     p_changed_by     IN  NUMBER,
@@ -187,15 +161,9 @@ EXCEPTION
         ROLLBACK;
         p_result_code := 1;
         p_result_msg  := 'خطأ غير متوقع: ' || SQLERRM;
-END SP_ACCEPT_PROJECT;";
+END SP_ACCEPT_PROJECT;",
 
-    /// <summary>
-    /// تحفظ تقييم المناقشة وتحسب الدرجة النهائية عبر FN_CALC_FINAL_SCORE،
-    /// ثم تحدّث حالة المشروع المرتبط إلى "منتهي" (3) تلقائياً.
-    /// تستبدل منطق SaveEvaluationAsync في DiscussionService.
-    /// </summary>
-    public const string SP_SAVE_EVALUATION = @"
-CREATE OR REPLACE PROCEDURE SP_SAVE_EVALUATION(
+                @"CREATE OR REPLACE PROCEDURE SP_SAVE_EVALUATION(
     p_discussion_id    IN  NUMBER,
     p_supervisor_score IN  NUMBER,
     p_committee_score  IN  NUMBER,
@@ -256,18 +224,9 @@ EXCEPTION
         ROLLBACK;
         p_result_code := 1;
         p_result_msg  := 'خطأ غير متوقع: ' || SQLERRM;
-END SP_SAVE_EVALUATION;";
+END SP_SAVE_EVALUATION;",
 
-    /// <summary>
-    /// تضيف طالباً جديداً بعد التحقق من:
-    ///  - وجود القسم.
-    ///  - تفرّد رقم الطالب.
-    ///  - تفرّد البريد الإلكتروني (اختياري).
-    /// p_result_code: 0=نجاح، 1=خطأ.
-    /// p_new_student_id: معرف الطالب المُنشأ (عند النجاح).
-    /// </summary>
-    public const string SP_ADD_STUDENT = @"
-CREATE OR REPLACE PROCEDURE SP_ADD_STUDENT(
+                @"CREATE OR REPLACE PROCEDURE SP_ADD_STUDENT(
     p_student_number  IN  ""student"".""student_number""%TYPE,
     p_full_name       IN  ""student"".""full_name""%TYPE,
     p_gender          IN  ""student"".""gender""%TYPE,
@@ -346,18 +305,9 @@ EXCEPTION
         p_result_code    := 1;
         p_result_msg     := 'خطأ غير متوقع: ' || SQLERRM;
         p_new_student_id := NULL;
-END SP_ADD_STUDENT;";
+END SP_ADD_STUDENT;",
 
-    /// <summary>
-    /// تعدّل بيانات طالب موجود بعد التحقق من:
-    ///  - وجود الطالب.
-    ///  - وجود القسم الجديد (إذا تغيّر).
-    ///  - تفرّد رقم الطالب الجديد (إذا تغيّر).
-    ///  - تفرّد البريد الإلكتروني الجديد (إذا تغيّر).
-    /// p_result_code: 0=نجاح، 1=خطأ.
-    /// </summary>
-    public const string SP_UPDATE_STUDENT = @"
-CREATE OR REPLACE PROCEDURE SP_UPDATE_STUDENT(
+                @"CREATE OR REPLACE PROCEDURE SP_UPDATE_STUDENT(
     p_student_id      IN  ""student"".""student_id""%TYPE,
     p_student_number  IN  ""student"".""student_number""%TYPE,
     p_full_name       IN  ""student"".""full_name""%TYPE,
@@ -453,18 +403,9 @@ EXCEPTION
         ROLLBACK;
         p_result_code := 1;
         p_result_msg  := 'خطأ غير متوقع: ' || SQLERRM;
-END SP_UPDATE_STUDENT;";
+END SP_UPDATE_STUDENT;",
 
-    // ═══════════════════════════════════════════════════════════════
-    // TRIGGERS
-    // ═══════════════════════════════════════════════════════════════
-
-    /// <summary>
-    /// يمنع إضافة دكتور كعضو في لجنة إذا كان هو المشرف على مشروع
-    /// تناقشه هذه اللجنة — يمنع تعارض الأدوار.
-    /// </summary>
-    public const string TRG_NO_SUPERVISOR_IN_OWN_COMMITTEE = @"
-CREATE OR REPLACE TRIGGER TRG_NO_SUPERVISOR_IN_OWN_COMMITTEE
+                @"CREATE OR REPLACE TRIGGER TRG_NO_SUPERVISOR_IN_OWN_COMMITTEE
 BEFORE INSERT ON ""committee_member""
 FOR EACH ROW
 DECLARE
@@ -482,32 +423,16 @@ BEGIN
         RAISE_APPLICATION_ERROR(-20001,
             'لا يمكن للمشرف أن يكون عضواً في لجنة تناقش أحد مشاريعه');
     END IF;
-END TRG_NO_SUPERVISOR_IN_OWN_COMMITTEE;";
+END TRG_NO_SUPERVISOR_IN_OWN_COMMITTEE;",
 
-    /// <summary>
-    /// يحسب FinalScore تلقائياً عند INSERT/UPDATE على جدول discussion
-    /// مما يضمن صحة الحقل دائماً بصرف النظر عن مصدر التحديث.
-    /// </summary>
-    public const string TRG_CALC_FINAL_SCORE = @"
-CREATE OR REPLACE TRIGGER TRG_CALC_FINAL_SCORE
+                @"CREATE OR REPLACE TRIGGER TRG_CALC_FINAL_SCORE
 BEFORE INSERT OR UPDATE OF ""supervisor_score"", ""committee_score"" ON ""discussion""
 FOR EACH ROW
 BEGIN
     :NEW.""final_score"" := FN_CALC_FINAL_SCORE(:NEW.""supervisor_score"", :NEW.""committee_score"");
-END TRG_CALC_FINAL_SCORE;";
+END TRG_CALC_FINAL_SCORE;",
 
-    // ═══════════════════════════════════════════════════════════════
-    // STUDENT PROCEDURES (إدارة الطلاب)
-    // ═══════════════════════════════════════════════════════════════
-
-    /// <summary>
-    /// تحذف طالباً حذفاً منطقياً (Soft Delete) بعد التحقق من:
-    ///  - وجود الطالب.
-    ///  - عدم ارتباطه بفريق نشط (لمنع حذف طالب في منتصف مشروع).
-    /// p_result_code: 0=نجاح، 1=خطأ.
-    /// </summary>
-    public const string SP_DELETE_STUDENT = @"
-CREATE OR REPLACE PROCEDURE SP_DELETE_STUDENT(
+                @"CREATE OR REPLACE PROCEDURE SP_DELETE_STUDENT(
     p_student_id  IN  ""student"".""student_id""%TYPE,
     p_deleted_by  IN  NUMBER,
     p_result_code OUT NUMBER,
@@ -552,18 +477,9 @@ EXCEPTION
         ROLLBACK;
         p_result_code := 1;
         p_result_msg  := 'خطأ غير متوقع: ' || SQLERRM;
-END SP_DELETE_STUDENT;";
+END SP_DELETE_STUDENT;",
 
-    /// <summary>
-    /// تُضيف طالباً إلى فريق بعد التحقق من:
-    ///  - وجود الطالب والفريق.
-    ///  - أنهما في نفس القسم.
-    ///  - عدم انتساب الطالب لفريق آخر مسبقاً.
-    /// يدعم أيضاً إلغاء انتساب الطالب من الفريق (p_team_id = NULL).
-    /// p_result_code: 0=نجاح، 1=خطأ.
-    /// </summary>
-    public const string SP_ASSIGN_STUDENT_TO_TEAM = @"
-CREATE OR REPLACE PROCEDURE SP_ASSIGN_STUDENT_TO_TEAM(
+                @"CREATE OR REPLACE PROCEDURE SP_ASSIGN_STUDENT_TO_TEAM(
     p_student_id  IN  ""student"".""student_id""%TYPE,
     p_team_id     IN  ""student"".""team_id""%TYPE,   -- NULL لإلغاء الانتساب
     p_updated_by  IN  NUMBER,
@@ -646,6 +562,34 @@ EXCEPTION
         ROLLBACK;
         p_result_code := 1;
         p_result_msg  := 'خطأ غير متوقع: ' || SQLERRM;
-END SP_ASSIGN_STUDENT_TO_TEAM;";
-}
+END SP_ASSIGN_STUDENT_TO_TEAM;"
+            };
 
+            foreach(var sql in scripts) {
+                try {
+                    using var exec = conn.CreateCommand();
+                    exec.CommandText = sql;
+                    exec.ExecuteNonQuery();
+                    Console.WriteLine("Executed successfully.");
+                } catch(Exception e) {
+                    Console.WriteLine("Error executing: " + e.Message);
+                }
+            }
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT NAME, TYPE, LINE, POSITION, TEXT FROM USER_ERRORS ORDER BY NAME, LINE";
+            using var reader = cmd.ExecuteReader();
+            bool hasErrors = false;
+            while(reader.Read())
+            {
+                hasErrors = true;
+                Console.WriteLine($"{reader["TYPE"]} {reader["NAME"]} at {reader["LINE"]}:{reader["POSITION"]} - {reader["TEXT"]}");
+            }
+            if(!hasErrors) Console.WriteLine("No errors found in USER_ERRORS!");
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+    }
+}

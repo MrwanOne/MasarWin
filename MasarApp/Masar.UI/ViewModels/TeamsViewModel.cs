@@ -103,7 +103,6 @@ public class TeamsViewModel : PagedViewModel<TeamDto>
                 Departments.Add(dept);
             }
 
-            // إشعار WPF بإعادة تحديد "الكل" بعد إعادة بناء القائمة
             _selectedDepartmentId = 0;
             OnPropertyChanged(nameof(SelectedDepartmentId));
 
